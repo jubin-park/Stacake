@@ -1,6 +1,7 @@
 package assignment.panel;
 
 import assignment.Config;
+import assignment.utility.StringUtility;
 import assignment.window.MainWindow;
 
 import javax.swing.*;
@@ -15,10 +16,10 @@ import java.awt.event.ActionListener;
 public class ConfigPanel extends JPanel implements IUpdatable {
     private final MainWindow mMainWindow;
     private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
-    private JTextField mTextFieldId = new JTextField(Config.getUserId(), 10);
-    private JLabel mLabelLimitSecondsPerTurn = new JLabel(Byte.toString(Config.getLimitSecondsPerTurn()), SwingConstants.CENTER);
+    private JTextField mTextFieldId = new JTextField(10);
+    private JLabel mLabelLimitSecondsPerTurn = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
     private JSlider mSliderLimitSecondsPerTurn = new JSlider(10, 30, 30);
-    private JLabel mLabelSoundEffectVolume = new JLabel(Byte.toString(Config.getSoundEffectVolume()), SwingConstants.CENTER);
+    private JLabel mLabelSoundEffectVolume = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
     private JSlider mSliderSoundEffectVolume = new JSlider(0, 100, 100);
     
     public ConfigPanel(MainWindow mainWindow) {
@@ -36,7 +37,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
 
         // labels
         var label00 = new JLabel("아이디");
-        var label01 = new JLabel("한 턴당 제한 시간초");
+        var label01 = new JLabel("한 턴당 제한 시간");
         var label02 = new JLabel("효과음 볼륨");
         addOnPanel(panelNested, label00, 0, 0, 1, 1);
         addOnPanel(panelNested, label01, 0, 1, 1, 1);
@@ -50,7 +51,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
             @Override
             public void stateChanged(ChangeEvent e) {
                 byte value = (byte)(((JSlider) (e.getSource())).getValue());
-                mLabelLimitSecondsPerTurn.setText(Byte.toString(value));
+                mLabelLimitSecondsPerTurn.setText(Byte.toString(value) + " 초");
             }
         });
         addOnPanel(panelNested, mSliderLimitSecondsPerTurn, 1, 1, 1, 1);
@@ -61,7 +62,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
             @Override
             public void stateChanged(ChangeEvent e) {
                 byte value = (byte)(((JSlider) (e.getSource())).getValue());
-                mLabelSoundEffectVolume.setText(Byte.toString(value));
+                mLabelSoundEffectVolume.setText(Byte.toString(value) + "%");
             }
         });
         addOnPanel(panelNested, mSliderSoundEffectVolume, 1, 3, 1, 1);
@@ -110,9 +111,9 @@ public class ConfigPanel extends JPanel implements IUpdatable {
     @Override
     public void updateComponents() {
         mTextFieldId.setText(Config.getUserId());
-        mLabelLimitSecondsPerTurn.setText(Byte.toString(Config.getLimitSecondsPerTurn()));
+        mLabelLimitSecondsPerTurn.setText(Byte.toString(Config.getLimitSecondsPerTurn()) + " 초");
         mSliderLimitSecondsPerTurn.setValue(Config.getLimitSecondsPerTurn());
-        mLabelSoundEffectVolume.setText(Byte.toString(Config.getSoundEffectVolume()));
+        mLabelSoundEffectVolume.setText(Byte.toString(Config.getSoundEffectVolume()) + " %");
         mSliderSoundEffectVolume.setValue(Config.getSoundEffectVolume());
     }
 

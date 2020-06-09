@@ -33,8 +33,16 @@ public class IntroPanel extends JPanel implements IUpdatable {
             }
         });
 
-        var buttonNetPlay = new JButton("Net Play");
-        buttonNetPlay.addActionListener(new ActionListener() {
+        var buttonCreateNetPlay = new JButton("Create NetPlay");
+        buttonCreateNetPlay.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        var buttonJoinNetPlay = new JButton("Join NetPlay");
+        buttonJoinNetPlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
@@ -65,9 +73,10 @@ public class IntroPanel extends JPanel implements IUpdatable {
         JPanel panelButtons = new JPanel(new GridBagLayout());
         mGridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         addOnPanel(panelButtons, buttonSinglePlay, 0, 0, 1, 1);
-        addOnPanel(panelButtons, buttonNetPlay, 0, 1, 1, 1);
-        addOnPanel(panelButtons, buttonConfig, 0, 2, 1, 1);
-        addOnPanel(panelButtons, buttonExit, 0, 3, 1, 1);
+        addOnPanel(panelButtons, buttonCreateNetPlay, 0, 1, 1, 1);
+        addOnPanel(panelButtons, buttonJoinNetPlay, 0, 2, 1, 1);
+        addOnPanel(panelButtons, buttonConfig, 0, 3, 1, 1);
+        addOnPanel(panelButtons, buttonExit, 0, 4, 1, 1);
         addOnPanel(this, panelButtons, 1, 1, 1, 1);
 
         //panelButtons.setBackground(Color.GRAY);
