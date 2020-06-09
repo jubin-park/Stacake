@@ -9,6 +9,9 @@ public class Program {
         if (args.length > 0) {
             Config.setUserId(args[0]);
         }
+        else {
+            Config.setDebugMode(false);
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
