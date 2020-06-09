@@ -11,7 +11,7 @@ import java.awt.event.ActionListener;
 // https://docs.oracle.com/javase/tutorial/uiswing/layout/card.html
 // https://stackoverflow.com/questions/42964669/placing-button-panel-in-center-java-swing
 
-public class IntroPanel extends JPanel {
+public class IntroPanel extends JPanel implements IUpdatable {
     private final MainWindow mMainWindow;
     private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
 
@@ -45,7 +45,8 @@ public class IntroPanel extends JPanel {
         buttonConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainWindow.showPanel("config");
+                mainWindow.showPanel(PanelType.CONFIG);
+
             }
         });
 
@@ -69,6 +70,8 @@ public class IntroPanel extends JPanel {
         addOnPanel(panelButtons, buttonExit, 0, 3, 1, 1);
         addOnPanel(this, panelButtons, 1, 1, 1, 1);
 
+        //panelButtons.setBackground(Color.GRAY);
+
         setVisible(true);
     }
 
@@ -78,5 +81,10 @@ public class IntroPanel extends JPanel {
         mGridBagConstraints.gridwidth = gridWidth;
         mGridBagConstraints.gridheight = gridHeight;
         panel.add(component, mGridBagConstraints);
+    }
+
+    @Override
+    public void updateComponents() {
+
     }
 }
