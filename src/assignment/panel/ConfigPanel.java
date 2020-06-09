@@ -5,10 +5,8 @@ import assignment.utility.StringUtility;
 import assignment.window.MainWindow;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,8 +66,6 @@ public class ConfigPanel extends JPanel implements IUpdatable {
         addOnPanel(panelNested, mSliderSoundEffectVolume, 1, 3, 1, 1);
         addOnPanel(panelNested, mLabelSoundEffectVolume, 1, 4, 1, 1);
 
-
-
         JPanel panelNested2 = new JPanel(new GridBagLayout());
         addOnPanel(this, panelNested2, 0, 1, 2, 1);
         panelNested2.setPreferredSize(new Dimension(350, 48));
@@ -87,6 +83,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
                     Config.setUserId(text);
                     Config.setLimitSecondsPerTurn((byte) mSliderLimitSecondsPerTurn.getValue());
                     Config.setSoundEffectVolume((byte) mSliderSoundEffectVolume.getValue());
+                    Config.saveProperties();
                 }
                 else {
                     JOptionPane.showMessageDialog(mMainWindow, "아이디를 입력하세요.");
@@ -116,6 +113,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
         mLabelSoundEffectVolume.setText(Byte.toString(Config.getSoundEffectVolume()) + " %");
         mSliderSoundEffectVolume.setValue(Config.getSoundEffectVolume());
     }
+
 
     private void addOnPanel(JPanel panel, JComponent component, int gridX, int gridY, int gridWidth, int gridHeight) {
         mGridBagConstraints.gridx = gridX;

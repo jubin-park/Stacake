@@ -12,6 +12,7 @@ public class Program {
         else {
             Config.setDebugMode(false);
         }
+        Config.loadAndUpdateProperties();
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
