@@ -1,5 +1,6 @@
 package assignment.window;
 
+import assignment.panel.ConfigPanel;
 import assignment.panel.IntroPanel;
 
 import javax.swing.*;
@@ -25,7 +26,8 @@ public class MainWindow extends JFrame {
         });
 
         setLayout(mCardLayout);
-        add(new IntroPanel(this));
+        add("intro", new IntroPanel(this));
+        add("config", new ConfigPanel(this));
 
         pack();
         setSize(width, height);
@@ -38,5 +40,9 @@ public class MainWindow extends JFrame {
 
     public void changeNextPanel() {
         mCardLayout.next(getContentPane());
+    }
+
+    public void showPanel(String name) {
+        mCardLayout.show(getContentPane(), name);
     }
 }

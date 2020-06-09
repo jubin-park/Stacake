@@ -6,6 +6,9 @@ import javax.swing.*;
 
 public class Program {
     public static void main(String[] args) {
+        if (args.length > 0) {
+            Config.setUserId(args[0]);
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

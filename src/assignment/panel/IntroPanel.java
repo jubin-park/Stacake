@@ -41,11 +41,11 @@ public class IntroPanel extends JPanel {
             }
         });
 
-        var buttonSetting = new JButton("Settings");
-        buttonSetting.addActionListener(new ActionListener() {
+        var buttonConfig = new JButton("Configuration");
+        buttonConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                mainWindow.showPanel("config");
             }
         });
 
@@ -65,7 +65,7 @@ public class IntroPanel extends JPanel {
         mGridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         addOnPanel(panelButtons, buttonSinglePlay, 0, 0, 1, 1);
         addOnPanel(panelButtons, buttonNetPlay, 0, 1, 1, 1);
-        addOnPanel(panelButtons, buttonSetting, 0, 2, 1, 1);
+        addOnPanel(panelButtons, buttonConfig, 0, 2, 1, 1);
         addOnPanel(panelButtons, buttonExit, 0, 3, 1, 1);
         addOnPanel(this, panelButtons, 1, 1, 1, 1);
 
