@@ -1,6 +1,6 @@
-package assignment;
+package assignment.window;
 
-import assignment.panel.PanelIntro;
+import assignment.panel.IntroPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,27 +10,30 @@ import java.awt.event.WindowEvent;
 // https://msource.tistory.com/5
 
 public class MainWindow extends JFrame {
-
     private CardLayout mCardLayout = new CardLayout();
 
-    public MainWindow() {
+    public MainWindow(int width, int height) {
         super("Manhattan Game");
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                MainWindow.this.setVisible(false);
-                MainWindow.this.dispose();
+            MainWindow.this.setVisible(false);
+            MainWindow.this.dispose();
             }
         });
 
         setLayout(mCardLayout);
-        add("one", new PanelIntro(this));
+        add(new IntroPanel(this));
 
         pack();
-        setSize(800, 600);
-        setLocationRelativeTo(null);
+        setSize(width, height);
+        setLocationRelativeTo(null); // center
+    }
+
+    public void changePreviousPanel() {
+        mCardLayout.previous(getContentPane());
     }
 
     public void changeNextPanel() {

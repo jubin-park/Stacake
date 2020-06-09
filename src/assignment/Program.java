@@ -1,5 +1,7 @@
 package assignment;
 
+import assignment.window.MainWindow;
+
 import javax.swing.*;
 
 public class Program {
@@ -7,7 +9,7 @@ public class Program {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final MainWindow mainWindow = new MainWindow();
+                final MainWindow mainWindow = new MainWindow(800, 600);
                 mainWindow.setVisible(true);
             }
         });
