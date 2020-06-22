@@ -4,10 +4,11 @@ import assignment.Config;
 import assignment.utility.StringUtility;
 import assignment.window.MainWindow;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.*;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

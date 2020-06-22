@@ -53,8 +53,7 @@ public class IntroPanel extends JPanel implements IUpdatable {
         buttonConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainWindow.showPanel(PanelType.CONFIG);
-
+                mMainWindow.showPanel(PanelType.CONFIG);
             }
         });
 
