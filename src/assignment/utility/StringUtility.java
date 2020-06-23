@@ -1,5 +1,5 @@
 package assignment.utility;
 
 public class StringUtility {
-    public final static String EMPTY = "";
+    public static final String EMPTY = "";
 }

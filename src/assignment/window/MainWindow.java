@@ -2,9 +2,11 @@ package assignment.window;
 
 import assignment.panel.ConfigPanel;
 import assignment.panel.IUpdatable;
+import assignment.panel.InGamePanel;
 import assignment.panel.IntroPanel;
 import assignment.panel.PanelType;
 
+import java.io.IOException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -34,7 +36,9 @@ public class MainWindow extends JFrame {
 
         addPanel(PanelType.INTRO, new IntroPanel(this));
         addPanel(PanelType.CONFIG, new ConfigPanel(this));
-        showPanel(PanelType.INTRO);
+        addPanel(PanelType.INGAME, new InGamePanel(this));
+        //showPanel(PanelType.INTRO);
+        showPanel(PanelType.INGAME);
 
         pack();
         setSize(width, height);
