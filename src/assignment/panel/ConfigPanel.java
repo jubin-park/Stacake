@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ConfigPanel extends JPanel implements IUpdatable {
-    private final MainWindow mMainWindow;
     private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
     private JTextField mTextFieldId = new JTextField(10);
     private JLabel mLabelLimitSecondsPerTurn = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
@@ -21,9 +20,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
     private JLabel mLabelSoundEffectVolume = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
     private JSlider mSliderSoundEffectVolume = new JSlider(0, 100, 100);
     
-    public ConfigPanel(MainWindow mainWindow) {
-        mMainWindow = mainWindow;
-
+    public ConfigPanel() {
         //setBorder(new EmptyBorder(10, 10, 10, 10));
         setLayout(new GridBagLayout());
 
@@ -80,14 +77,14 @@ public class ConfigPanel extends JPanel implements IUpdatable {
             public void actionPerformed(ActionEvent e) {
                 String text = mTextFieldId.getText();
                 if (text.length() > 0) {
-                    mMainWindow.showPanel(PanelType.INTRO);
+                    PanelManager.getInstance().showPanel(PanelType.INTRO);
                     Config.setUserId(text);
                     Config.setLimitSecondsPerTurn((byte) mSliderLimitSecondsPerTurn.getValue());
                     Config.setSoundEffectVolume((byte) mSliderSoundEffectVolume.getValue());
                     Config.saveProperties();
                 }
                 else {
-                    JOptionPane.showMessageDialog(mMainWindow, "아이디를 입력하세요.");
+                    JOptionPane.showMessageDialog(MainWindow.getInstance(), "아이디를 입력하세요.");
                 }
             }
         });
@@ -96,7 +93,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
         buttonCancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mMainWindow.showPanel(PanelType.INTRO);
+                PanelManager.getInstance().showPanel(PanelType.INTRO);
             }
         });
 

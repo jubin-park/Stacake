@@ -2,20 +2,17 @@ package assignment.game.object;
 
 import assignment.Program;
 import assignment.utility.StringUtility;
-import assignment.window.MainWindow;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Properties;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public final class Spot {
     private static final String IMG_PATH = "resources/images/spots.png";
     private static BufferedImage mImage;
+    private static final int IMAGE_WIDTH = 49;
+    private static final int IMAGE_HEIGHT = 49;
 
     private BufferedImage mSubImage;
     private ArrayList<Building> mBuildings = new ArrayList<>();
@@ -24,6 +21,8 @@ public final class Spot {
 
     public Spot() {
         loadImage();
+        mSubImage = mImage.getSubimage(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+
         mLabelSpot = new JLabel(new ImageIcon(mSubImage));
         for (int i = 0; i < mLabelStories.length; ++i) {
             mLabelStories[i] = new JLabel(StringUtility.EMPTY + i);
@@ -33,21 +32,18 @@ public final class Spot {
     private void loadImage() {
         if (mImage == null) {
             try {
-                //URL urlToImage = Program.class.getResource(IMG_PATH);
-                // InputStream imgStream = Program.class.getResourceAsStream(IMG_PATH);
                 mImage = ImageIO.read(Program.class.getResourceAsStream(IMG_PATH));
             } catch (IOException ex) {
 
             }
         }
-        mSubImage = mImage.getSubimage(49, 49, 49, 49);
     }
 
     public void stackBuilding(final Building building) {
         mBuildings.add(building);
     }
 
-    public int getBuildingStoryCount(final PlayerColorType type) {
+    public int getBuildingStoryCount(final MarkerColor type) {
         int count = 0;
 
         for (var building : mBuildings) {

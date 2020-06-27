@@ -1,19 +1,19 @@
 package assignment.game.object;
 
 public final class Building {
-    private final PlayerColorType mType;
-    private final StoryType mStory;
+    private final MarkerColor mType;
+    private final BuildingStoryType mStory;
 
-    public Building(final PlayerColorType type, final StoryType story) {
+    public Building(final MarkerColor type, final BuildingStoryType story) {
         mType = type;
         mStory = story;
     }
 
-    public PlayerColorType getType() {
+    public MarkerColor getType() {
         return mType;
     }
 
-    public StoryType getStory() {
+    public BuildingStoryType getStory() {
         return mStory;
     }
 }

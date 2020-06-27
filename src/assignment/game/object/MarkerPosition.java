@@ -1,14 +1,14 @@
 package assignment.game.object;
 
-public enum PlayerColorType {
-    RED(0),
-    YELLOW(1),
-    GREEN(2),
-    BLUE(3);
+public enum MarkerPosition {
+    SOUTH(0),
+    WEST(1),
+    NORTH(2),
+    EAST(3);
 
     private int mIndex;
 
-    PlayerColorType(final int index) {
+    MarkerPosition(final int index) {
         mIndex = index;
     }
 

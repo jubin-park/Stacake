@@ -1,5 +1,6 @@
 package assignment.panel;
 
+import assignment.Config;
 import assignment.window.MainWindow;
 
 import javax.swing.*;
@@ -12,12 +13,10 @@ import java.awt.event.ActionListener;
 // https://stackoverflow.com/questions/42964669/placing-button-panel-in-center-java-swing
 
 public class IntroPanel extends JPanel implements IUpdatable {
-    private final MainWindow mMainWindow;
     private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
 
-    public IntroPanel(MainWindow mainWindow)
+    public IntroPanel()
     {
-        mMainWindow = mainWindow;
         setBorder(new EmptyBorder(10, 10, 10, 10));
         setLayout(new GridBagLayout());
 
@@ -29,7 +28,9 @@ public class IntroPanel extends JPanel implements IUpdatable {
         buttonSinglePlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                var panelManager = PanelManager.getInstance();
+                panelManager.addPanel(PanelType.INGAME, new InGamePanel(new String[] {}));
+                panelManager.showPanel(PanelType.INGAME);
             }
         });
 
@@ -53,7 +54,9 @@ public class IntroPanel extends JPanel implements IUpdatable {
         buttonConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mMainWindow.showPanel(PanelType.CONFIG);
+                var panelManager = PanelManager.getInstance();
+                panelManager.addPanel(PanelType.CONFIG, new ConfigPanel());
+                panelManager.showPanel(PanelType.CONFIG);
             }
         });
 
