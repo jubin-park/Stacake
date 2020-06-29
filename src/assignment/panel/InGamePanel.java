@@ -1,8 +1,9 @@
 package assignment.panel;
 
 import assignment.Config;
+import assignment.Program;
 import assignment.game.object.AIPlayer;
-import assignment.game.object.BuildingStoryType;
+import assignment.game.object.BuildingStory;
 import assignment.game.object.CardType;
 import assignment.game.object.City;
 import assignment.game.object.MarkerColor;
@@ -12,11 +13,15 @@ import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
 import assignment.window.MainWindow;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Random;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -25,20 +30,27 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private static final int SPOT_ROW_PER_CITY = 2;
     private static final int SPOT_COLUMN_PER_CITY = 3;
     private static final int MAX_PLAYER_SIZE = 4;
+    private static final int MAX_SELECTING_BUILDING_COUNT = 6;
+    private static final int MAX_ROUND_COUNT = 4;
+
+    private static final String IMG_CAKES_PATH = "resources/images/cakes.png";
+    private static BufferedImage sImageCakes;
 
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
-    private ArrayList<CardType> mMyRoundCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
-    private ArrayList<BuildingStoryType> mBuildingBlocks = new ArrayList<BuildingStoryType>();
+    private Player mMyPlayer = new Player(Config.getUserId());
+    private int mCurrentRoundCount = 1;
+    private JPanel mPanelGridBag;
+    private JPanel mPanelUI;
 
     public InGamePanel(String[] netPlayerIds) {
-        initializePlayers(netPlayerIds);
+        locateMarkers(netPlayerIds);
         initializeBoard();
         initializeDummyCards();
-        initializeBuildingBlocks();
+
         setLayout(new GridLayout(1, 1));
-        add(createGridBagPanel());
+        add(createPanelMain());
     }
 
     @Override
@@ -46,13 +58,13 @@ public class InGamePanel extends JPanel implements IUpdatable {
 
     }
 
-    private void initializePlayers(String[] netPlayerIds) {
+    private void locateMarkers(String[] netPlayerIds) {
         Random rand = new Random(System.currentTimeMillis());
 
         ArrayList<MarkerColor> colors = new ArrayList<MarkerColor>(Arrays.asList(MarkerColor.values()));
         ArrayList<MarkerPosition> positions = new ArrayList<MarkerPosition>(Arrays.asList(MarkerPosition.values()));
 
-        mPlayers.add(new Player(Config.getUserId()));
+        mPlayers.add(mMyPlayer);
         for (var id : netPlayerIds) {
             mPlayers.add(new NetPlayer(id));
         }
@@ -83,52 +95,44 @@ public class InGamePanel extends JPanel implements IUpdatable {
         }
     }
 
-    private void initializeBuildingBlocks() {
-        for (int i = 0; i < 2; ++i) {
-            mBuildingBlocks.add(BuildingStoryType.FOUR);
-        }
-        for (int i = 0; i < 4; ++i) {
-            mBuildingBlocks.add(BuildingStoryType.THREE);
-        }
-        for (int i = 0; i < 6; ++i) {
-            mBuildingBlocks.add(BuildingStoryType.TWO);
-        }
-        for (int i = 0; i < 12; ++i) {
-            mBuildingBlocks.add(BuildingStoryType.ONE);
+    private void initializeBoard() {
+        for (int i = 0; i < CITY_SIZE; ++i) {
+            mCities.add(new City());
         }
     }
 
-    private JPanel createGridBagPanel() {
-        JPanel panelMaster = new JPanel(new BorderLayout());
-        panelMaster.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panelMaster.setBackground(Color.DARK_GRAY);
+    private JPanel createPanelMain() {
+        JPanel panelMain = new JPanel(new BorderLayout());
+        panelMain.setBorder(new EmptyBorder(10, 10, 10, 10));
+        panelMain.setBackground(Color.DARK_GRAY);
 
-        JPanel panelGridBag = new JPanel(new GridBagLayout());
-        panelGridBag.setOpaque(false); // delete border
+        mPanelGridBag = new JPanel(new GridBagLayout());
+        mPanelGridBag.setOpaque(false);
 
         GridBagConstraints gbc = new GridBagConstraints();
 
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        //gbc.weightx = 0.5;
-        //gbc.weighty = 0.65;
-        panelGridBag.add(createPanelBoard(), gbc);
+        //gbc.weightx = 1.0;
+        mPanelGridBag.add(createPanelBoard(), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
-        gbc.weightx = 1;
-        panelGridBag.add(createPanelGameLog(), gbc);
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        mPanelGridBag.add(createPanelGameLog(), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 2;
-        gbc.weighty = 1;
-        panelGridBag.add(createPanelUI(), gbc);
+        //gbc.weightx = 1.0;
+        //gbc.weighty = 0.4;
+        mPanelGridBag.add(createPanelUI(), gbc);
 
-        panelMaster.add(panelGridBag);
+        panelMain.add(mPanelGridBag);
 
-        return panelMaster;
+        return panelMain;
     }
 
     private JPanel createPanelBoard() {
@@ -195,14 +199,102 @@ public class InGamePanel extends JPanel implements IUpdatable {
     }
 
     private JPanel createPanelUI() {
-        JPanel panelUI = new JPanel();
-        panelUI.setBackground(Color.white);
-        return panelUI;
+        mPanelUI = new JPanel();
+        mPanelUI.setBackground(Color.white);
+
+        mPanelUI.add(createPanelSelectBuildings());
+
+        return mPanelUI;
     }
 
-    private void initializeBoard() {
-        for (int i = 0; i < CITY_SIZE; ++i) {
-            mCities.add(new City());
+    private JPanel createPanelSelectBuildings() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+
+        if (sImageCakes == null) {
+            try {
+                sImageCakes = ImageIO.read(Program.class.getResourceAsStream(IMG_CAKES_PATH));
+            } catch (IOException ex) {
+
+            }
         }
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(2,2,2,2);
+
+        final int size = BuildingStory.values().length;
+        final BuildingStory[] stories = BuildingStory.values();
+
+        gbc.gridy = 0;
+        JLabel[] labelPreviewBuildings = new JLabel[size];
+        for (int i = 0; i < size; ++i) {
+            gbc.gridx = i + 1;
+            labelPreviewBuildings[i] = new JLabel(new ImageIcon(sImageCakes.getSubimage(32 * i, 0, 32, 96)));
+            panel.add(labelPreviewBuildings[i], gbc);
+        }
+
+        gbc.gridy = 1;
+        gbc.gridx = 0;
+        panel.add(new JLabel("선택 개수"), gbc);
+        JSpinner[] spinners = new JSpinner[size];
+        for (int i = 0; i < size; ++i) {
+            gbc.gridx = i + 1;
+            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(MAX_SELECTING_BUILDING_COUNT, mMyPlayer.getBuildingCount(stories[i])), 1));
+            spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
+            panel.add(spinners[i], gbc);
+        }
+
+        gbc.gridy = 2;
+        gbc.gridx = 0;
+        panel.add(new JLabel("잔여 개수"), gbc);
+        for (int i = 0; i < size; ++i) {
+            gbc.gridx = i + 1;
+            panel.add(new JLabel(String.format("%d", mMyPlayer.getBuildingCount(stories[i]))), gbc);
+        }
+
+        gbc.gridy = 3;
+        gbc.gridx = 0;
+        gbc.gridwidth = 5;
+        panel.add(new JLabel("- 사용할 블록 6개를 선택하세요 -", SwingConstants.CENTER), gbc);
+
+        gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridwidth = 5;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JButton buttonApply = new JButton(mCurrentRoundCount + "라운드 시작");
+        buttonApply.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int buildingCount = 0;
+                for (int i = 0; i < size; ++i) {
+                    buildingCount += (Integer) spinners[i].getValue();
+                }
+
+                if (buildingCount != MAX_SELECTING_BUILDING_COUNT) {
+                    JOptionPane.showMessageDialog(MainWindow.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
+                    return;
+                }
+
+                for (int i = 0; i < size; ++i) {
+                    int count = (Integer) spinners[i].getValue();
+                    for (int c = 0; c < count; ++c) {
+                        mMyPlayer.takeBuilding(stories[i]);
+                    }
+                }
+
+                Object source = e.getSource();
+                if (source instanceof Component) {
+                    Component comp = (Component) source;
+                    var parent = comp.getParent();
+                    //parent.setVisible(false);
+                    mPanelUI.remove(parent);
+                    revalidate();
+                    repaint();
+                }
+            }
+        });
+        panel.add(buttonApply, gbc);
+
+        return panel;
     }
 }

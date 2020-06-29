@@ -17,7 +17,7 @@ public final class Spot {
     private BufferedImage mSubImage;
     private ArrayList<Building> mBuildings = new ArrayList<>();
     private JLabel mLabelSpot;
-    private JLabel[] mLabelStories = new JLabel[4];
+    private JLabel[] mLabelStories = new JLabel[BuildingStory.values().length];
 
     public Spot() {
         loadImage();
@@ -43,11 +43,11 @@ public final class Spot {
         mBuildings.add(building);
     }
 
-    public int getBuildingStoryCount(final MarkerColor type) {
+    public int getBuildingStoryCount(final MarkerColor color) {
         int count = 0;
 
         for (var building : mBuildings) {
-            if (building.getType() == type) {
+            if (building.getType() == color) {
                 count += building.getStory().getValue();
             }
         }

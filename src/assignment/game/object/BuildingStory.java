@@ -1,6 +1,6 @@
 package assignment.game.object;
 
-public enum BuildingStoryType {
+public enum BuildingStory {
     ONE(1),
     TWO(2),
     THREE(3),
@@ -8,7 +8,7 @@ public enum BuildingStoryType {
 
     private int mValue;
 
-    BuildingStoryType(int value) {
+    BuildingStory(int value) {
         mValue = value;
     }
 
