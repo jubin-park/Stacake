@@ -10,6 +10,7 @@ public final class ResourceManager {
     public static final String CARDS_IMAGE_PATH = "resources/images/cards.png";
     public static final String SPOTS_IMAGE_PATH = "resources/images/spots.png";
     public static final String MARKERS_IMAGE_PATH = "resources/images/markers.png";
+    public static final String TARGET_IMAGE_PATH = "resources/images/target.png";
 
     private static ResourceManager mInstance;
 
@@ -17,6 +18,7 @@ public final class ResourceManager {
     private BufferedImage mImageSetCard;
     private BufferedImage mImageSetSpot;
     private BufferedImage mImageSetMarker;
+    private BufferedImage mImageTarget;
 
     private ResourceManager() {
         try {
@@ -24,6 +26,7 @@ public final class ResourceManager {
             mImageSetCard = ImageIO.read(Program.class.getResourceAsStream(CARDS_IMAGE_PATH));
             mImageSetSpot = ImageIO.read(Program.class.getResourceAsStream(SPOTS_IMAGE_PATH));
             mImageSetMarker = ImageIO.read(Program.class.getResourceAsStream(MARKERS_IMAGE_PATH));
+            mImageTarget = ImageIO.read(Program.class.getResourceAsStream(TARGET_IMAGE_PATH));
         } catch (IOException ex) {
             assert (false) : ex;
         }
@@ -51,5 +54,9 @@ public final class ResourceManager {
 
     public BufferedImage getImageSetMarker() {
         return mImageSetMarker;
+    }
+
+    public BufferedImage getImageTarget() {
+        return mImageTarget;
     }
 }

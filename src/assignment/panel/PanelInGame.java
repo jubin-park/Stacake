@@ -194,7 +194,16 @@ public class PanelInGame extends JPanel implements IUpdatable {
         listCard.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(final ListSelectionEvent e) {
-                
+                int selectedIndex = listCard.getSelectedIndex();
+                if (selectedIndex < 0) {
+
+                    return;
+                }
+
+                var card = mMyPlayer.getCards().get(selectedIndex);
+                for (var city : mCities) {
+                    city.updatePreview(card, mMyPlayer.getPosition());
+                }
             }
         });
 
@@ -222,6 +231,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
                 Collections.shuffle(mDummyCards);
 
                 buttonPlayCard.setEnabled(false);
+
                 listCard.setEnabled(false);
             }
         });
@@ -234,7 +244,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
 
         JScrollPane listCakeScroller = new JScrollPane();
         listCakeScroller.setViewportView(listCake);
-        listCakeScroller.setPreferredSize(new Dimension(280, 108));
+        listCakeScroller.setPreferredSize(new Dimension(240, 108));
 
         panelCardList.add(listCakeScroller);
 

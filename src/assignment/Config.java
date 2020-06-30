@@ -32,6 +32,9 @@ public final class Config {
     public static final int MARKER_PANE_WIDTH = 64;
     public static final int MARKER_PANE_HEIGHT = 72;
 
+    public static final int TARGET_IMAGE_WIDTH = 49;
+    public static final int TARGET_IMAGE_HEIGHT = 49;
+
     public static final int MAX_ROUND_COUNT = 4;
     public static final int MAX_PLAYER_SIZE = 4;
     public static final int MAX_CITY_SIZE = 6;

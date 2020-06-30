@@ -9,17 +9,29 @@ public final class City {
     private ArrayList<Spot> mSpots = new ArrayList<Spot>();
     private JLayeredPane mLayeredPane;
 
+    private static int[][] INDICES_2D_MAP= new int[][] {
+
+            {0, 1, 2, 3, 4, 5, 6, 7, 8},
+            /*
+            {6, 3, 0, 7, 4, 1, 8, 5, 2},
+            {8, 7, 6, 5, 4, 3, 2, 1, 0},
+            {2, 5, 8, 1, 4, 7, 0, 3, 6}
+             */
+            {2, 5, 8, 1, 4, 7, 0, 3, 6},
+            {8, 7, 6, 5, 4, 3, 2, 1, 0},
+            {6, 3, 0, 7, 4, 1, 8, 5, 2}
+    };
+
     public City() {
         mLayeredPane = new JLayeredPane();
         mLayeredPane.setOpaque(false);
-        //mLayeredPane.setPreferredSize(new Dimension(486, 324));
 
         for (int i = 0; i < Config.SPOT_COUNT_PER_CITY; ++i) {
             var spot = new Spot();
             mSpots.add(spot);
 
-            int x = (i % Config.SPOT_COLUMN_PER_CITY) * 49;
-            int y = (i / Config.SPOT_COLUMN_PER_CITY) * 49;
+            int x = (i % Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_WIDTH;
+            int y = (i / Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_HEIGHT;
 
             spot.getLabelSpot().setBounds(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
 
@@ -39,10 +51,21 @@ public final class City {
             labels[3].setHorizontalAlignment(SwingConstants.RIGHT);
             labels[3].setVerticalAlignment(SwingConstants.CENTER);
             labels[3].setBounds(x + Config.SPOT_LABEL_OFFSET_X, y + Config.SPOT_LABEL_OFFSET_Y, Config.SPOT_LABEL_WIDTH, Config.SPOT_LABEL_HEIGHT);
-
             spot.updateLabel();
+
+            spot.getLabelTarget().setBounds(x, y, Config.TARGET_IMAGE_WIDTH, Config.TARGET_IMAGE_HEIGHT);
+
             spot.addTo(mLayeredPane);
         }
+    }
+
+    public void updatePreview(final CardType card, final PlayerPositionType playerPosition) {
+        for (var spot : mSpots) {
+            spot.setTargetVisible(false);
+        }
+
+        int index = INDICES_2D_MAP[playerPosition.getIndex()][card.getIndex()];
+        mSpots.get(index).setTargetVisible(true);
     }
 
     public Spot getSpot(final int index) {
