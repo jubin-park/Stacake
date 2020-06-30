@@ -1,7 +1,7 @@
 package assignment;
 
 import assignment.utility.ResourceManager;
-import assignment.window.MainWindow;
+import assignment.frame.FrameMain;
 
 import javax.swing.*;
 
@@ -20,8 +20,8 @@ public class Program {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final MainWindow mainWindow = new MainWindow(900, 732);
-                mainWindow.setVisible(true);
+                final FrameMain frameMain = new FrameMain(900, 732);
+                frameMain.setVisible(true);
             }
         });
     }

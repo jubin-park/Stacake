@@ -1,6 +1,6 @@
 package assignment.game.object;
 
-public enum BuildingLayerType {
+public enum CakeLayerType {
     ONE(1),
     TWO(2),
     THREE(3),
@@ -8,7 +8,7 @@ public enum BuildingLayerType {
 
     private int mValue;
 
-    BuildingLayerType(int value) {
+    CakeLayerType(int value) {
         mValue = value;
     }
 

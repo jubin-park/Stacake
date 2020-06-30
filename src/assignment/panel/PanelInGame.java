@@ -2,16 +2,15 @@ package assignment.panel;
 
 import assignment.Config;
 import assignment.game.object.AIPlayer;
-import assignment.game.object.BuildingLayerType;
+import assignment.game.object.CakeLayerType;
 import assignment.game.object.CardType;
 import assignment.game.object.City;
 import assignment.game.object.PlayerColorType;
-import assignment.game.object.Marker;
 import assignment.game.object.PlayerPositionType;
 import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
 import assignment.utility.ResourceManager;
-import assignment.window.MainWindow;
+import assignment.frame.FrameMain;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +21,7 @@ import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-public class InGamePanel extends JPanel implements IUpdatable {
+public class PanelInGame extends JPanel implements IUpdatable {
     private static final int CITY_SIZE = 6;
     private static final int SPOT_ROW_PER_CITY = 2;
     private static final int SPOT_COLUMN_PER_CITY = 3;
@@ -41,7 +40,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private JPanel mPanelGridBag;
     private JPanel mPanelUI;
 
-    public InGamePanel(String[] netPlayerIds) {
+    public PanelInGame(String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
         initializeBoard();
         initializeDummyCards();
@@ -71,11 +70,13 @@ public class InGamePanel extends JPanel implements IUpdatable {
         }
         Collections.shuffle(mPlayers);
 
-        int i = 0;
+        int positionIndex = 0;
         for (var player : mPlayers) {
-            int c = rand.nextInt(colors.size());
-            player.setMarker(new Marker(player.getId(), positions.get(i++), colors.get(c)));
-            colors.remove(c);
+            int colorIndex = rand.nextInt(colors.size());
+            player.setColor(colors.get(colorIndex));
+            colors.remove(colorIndex);
+            player.setPosition(positions.get(positionIndex++));
+            player.createMarker();
         }
     }
 
@@ -202,7 +203,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
         // 현재 라운드 수
         // 현재 턴의 플레이어 행동
         
-        mPanelUI.add(createPanelSelectUsableBuildings());
+        mPanelUI.add(createPanelSelectUsableCakes());
 
         return mPanelUI;
     }
@@ -228,7 +229,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
             public void actionPerformed(ActionEvent e) {
                 int selectedIndex = listCards.getSelectedIndex();
                 if (selectedIndex < 0) {
-                    JOptionPane.showMessageDialog(MainWindow.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
+                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
 
                     return;
                 }
@@ -247,22 +248,22 @@ public class InGamePanel extends JPanel implements IUpdatable {
         return panelCardList;
     }
 
-    private JPanel createPanelSelectUsableBuildings() {
+    private JPanel createPanelSelectUsableCakes() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
 
-        final int size = BuildingLayerType.values().length;
-        final BuildingLayerType[] stories = BuildingLayerType.values();
+        final int size = CakeLayerType.values().length;
+        final CakeLayerType[] stories = CakeLayerType.values();
 
         gbc.gridy = 0;
-        JLabel[] labelPreviewBuildings = new JLabel[size];
+        JLabel[] labelPreviewCakes = new JLabel[size];
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            labelPreviewBuildings[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(CAKE_IMAGE_WIDTH * i, 0, CAKE_IMAGE_WIDTH, CAKE_IMAGE_HEIGHT)));
-            panel.add(labelPreviewBuildings[i], gbc);
+            labelPreviewCakes[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(CAKE_IMAGE_WIDTH * i, 0, CAKE_IMAGE_WIDTH, CAKE_IMAGE_HEIGHT)));
+            panel.add(labelPreviewCakes[i], gbc);
         }
 
         gbc.gridy = 1;
@@ -271,7 +272,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
         JSpinner[] spinners = new JSpinner[size];
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(MAX_SELECTING_BUILDING_COUNT, mMyPlayer.getBuildingCount(stories[i])), 1));
+            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(MAX_SELECTING_BUILDING_COUNT, mMyPlayer.getCakeCount(stories[i])), 1));
             spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
             panel.add(spinners[i], gbc);
         }
@@ -281,7 +282,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
         panel.add(new JLabel("잔여 개수"), gbc);
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            panel.add(new JLabel(String.format("%d", mMyPlayer.getBuildingCount(stories[i]))), gbc);
+            panel.add(new JLabel(String.format("%d", mMyPlayer.getCakeCount(stories[i]))), gbc);
         }
 
         gbc.gridy = 3;
@@ -297,20 +298,20 @@ public class InGamePanel extends JPanel implements IUpdatable {
         buttonApply.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int buildingCount = 0;
+                int cakeCount = 0;
                 for (int i = 0; i < size; ++i) {
-                    buildingCount += (Integer) spinners[i].getValue();
+                    cakeCount += (Integer) spinners[i].getValue();
                 }
 
-                if (buildingCount != MAX_SELECTING_BUILDING_COUNT) {
-                    JOptionPane.showMessageDialog(MainWindow.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
+                if (cakeCount != MAX_SELECTING_BUILDING_COUNT) {
+                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
                     return;
                 }
 
                 for (int i = 0; i < size; ++i) {
                     int count = (Integer) spinners[i].getValue();
                     for (int c = 0; c < count; ++c) {
-                        mMyPlayer.takeBuilding(stories[i]);
+                        mMyPlayer.takeCake(stories[i]);
                     }
                 }
 

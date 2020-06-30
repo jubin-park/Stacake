@@ -1,6 +1,6 @@
-package assignment.window;
+package assignment.frame;
 
-import assignment.panel.IntroPanel;
+import assignment.panel.PanelIntro;
 import assignment.panel.PanelManager;
 import assignment.panel.PanelType;
 
@@ -8,18 +8,18 @@ import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class MainWindow extends JFrame {
-    private static MainWindow sInstance;
+public class FrameMain extends JFrame {
+    private static FrameMain sInstance;
 
-    public MainWindow(int width, int height) {
+    public FrameMain(int width, int height) {
         super("Manhattan Game");
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-            MainWindow.this.setVisible(false);
-            MainWindow.this.dispose();
+            FrameMain.this.setVisible(false);
+            FrameMain.this.dispose();
             }
         });
 
@@ -32,11 +32,11 @@ public class MainWindow extends JFrame {
         }
 
         var panelManager = PanelManager.getInstance();
-        panelManager.addPanel(PanelType.INTRO, new IntroPanel());
+        panelManager.addPanel(PanelType.INTRO, new PanelIntro());
         panelManager.showPanel(PanelType.INTRO);
     }
 
-    public static MainWindow getInstance() {
+    public static FrameMain getInstance() {
         return sInstance;
     }
 }

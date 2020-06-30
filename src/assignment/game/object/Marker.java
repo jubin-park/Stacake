@@ -18,14 +18,11 @@ public final class Marker {
     private JLayeredPane mLayeredPane;
     private JLabel mLabelMarker;
     private JLabel mLabelId;
-    private PlayerPositionType mPosition;
-    private PlayerColorType mColor;
+    private Player mPlayer;
 
-    public Marker(final String playerId, final PlayerPositionType position, final PlayerColorType color) {
-        mPosition = position;
-        mColor = color;
-
-        mSubImage = ResourceManager.getInstance().getImageSetMarker().getSubimage(mPosition.getIndex() * IMAGE_WIDTH, mColor.getIndex() * IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
+    public Marker(final Player player) {
+        mPlayer = player;
+        mSubImage = ResourceManager.getInstance().getImageSetMarker().getSubimage(mPlayer.getPosition().getIndex() * IMAGE_WIDTH, mPlayer.getColor().getIndex() * IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
 
         mLayeredPane = new JLayeredPane();
         mLayeredPane.setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
@@ -34,7 +31,7 @@ public final class Marker {
         mLabelMarker.setBounds(0, 0, PANE_WIDTH, PANE_HEIGHT);
         mLabelMarker.setHorizontalAlignment(SwingConstants.CENTER);
 
-        mLabelId = new JLabel(playerId);
+        mLabelId = new JLabel(mPlayer.getId());
         mLabelId.setBounds(0, 0, PANE_WIDTH, PANE_HEIGHT);
         mLabelId.setHorizontalAlignment(SwingConstants.CENTER);
         mLabelId.setVerticalAlignment(SwingConstants.BOTTOM);
@@ -54,13 +51,5 @@ public final class Marker {
 
     public JLabel getLabelId() {
         return mLabelId;
-    }
-
-    public PlayerColorType getColor() {
-        return mColor;
-    }
-
-    public PlayerPositionType getPosition() {
-        return mPosition;
     }
 }

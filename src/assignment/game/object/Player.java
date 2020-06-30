@@ -1,13 +1,10 @@
 package assignment.game.object;
 
-import assignment.Program;
 import assignment.utility.ImageUtility;
 import assignment.utility.ResourceManager;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public class Player {
@@ -16,43 +13,52 @@ public class Player {
 
     protected String mId;
     protected Marker mMarker;
-    protected ArrayList<BuildingLayerType> mRemainBuildings = new ArrayList<BuildingLayerType>();
-    protected ArrayList<BuildingLayerType> mUsableBuildings = new ArrayList<BuildingLayerType>();
+    protected PlayerColorType mColor;
+    protected PlayerPositionType mPosition;
+    protected ArrayList<Cake> mRemainCakes = new ArrayList<Cake>();
+    protected ArrayList<Cake> mUsableCakes = new ArrayList<Cake>();
     protected ArrayList<CardType> mCards = new ArrayList<CardType>();
     protected DefaultListModel<ImageIcon> mModelCardImages = new DefaultListModel<ImageIcon>();
 
-    public Player(String id) {
+    public Player(final String id) {
         mId = id;
+
         for (int i = 0; i < 2; ++i) {
-            mRemainBuildings.add(BuildingLayerType.ONE);
+            mRemainCakes.add(new Cake(CakeLayerType.ONE, mPosition));
         }
         for (int i = 0; i < 4; ++i) {
-            mRemainBuildings.add(BuildingLayerType.TWO);
+            mRemainCakes.add(new Cake(CakeLayerType.TWO, mPosition));
         }
         for (int i = 0; i < 6; ++i) {
-            mRemainBuildings.add(BuildingLayerType.THREE);
+            mRemainCakes.add(new Cake(CakeLayerType.THREE, mPosition));
         }
         for (int i = 0; i < 12; ++i) {
-            mRemainBuildings.add(BuildingLayerType.FOUR);
+            mRemainCakes.add(new Cake(CakeLayerType.FOUR, mPosition));
         }
     }
 
-    public int getBuildingCount(final BuildingLayerType buildingLayerType) {
+    public int getCakeCount(final CakeLayerType cakeLayerType) {
         int count = 0;
-        for (var story : mRemainBuildings) {
-            if (story == buildingLayerType) {
+        for (var cake : mRemainCakes) {
+            if (cake.getLayer() == cakeLayerType) {
                 ++count;
             }
         }
         return count;
     }
 
-    public void takeBuilding(final BuildingLayerType buildingLayerType) {
-        if (mRemainBuildings.remove(buildingLayerType)) {
-            mUsableBuildings.add(buildingLayerType);
-        } else {
-            assert (false);
+    public void takeCake(final CakeLayerType cakeLayerType) {
+        final int size = mRemainCakes.size();
+        for (int i = 0; i < size; ++i) {
+            var cake = mRemainCakes.get(i);
+            if (cake.getLayer() == cakeLayerType) {
+                mRemainCakes.remove(i);
+                mUsableCakes.add(cake);
+
+                return;
+            }
         }
+        assert (false);
     }
 
     public void takeCardFromDummy(ArrayList<CardType> dummyCards) {
@@ -66,13 +72,17 @@ public class Player {
         mCards.add(selectedCard);
 
         BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(CARD_IMAGE_HEIGHT * selectedCard.getIndex(), 0, CARD_IMAGE_WIDTH, CARD_IMAGE_HEIGHT);
-        int degree = 90 * mMarker.getPosition().getIndex();
+        int degree = 90 * mPosition.getIndex();
         mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
     }
 
     public void discardCardByIndex(int index) {
         mCards.remove(index);
         mModelCardImages.remove(index);
+    }
+
+    public void createMarker() {
+        mMarker = new Marker(this);
     }
 
     public String getId() {
@@ -83,12 +93,24 @@ public class Player {
         return mMarker;
     }
 
-    public void setMarker(Marker marker) {
-        mMarker = marker;
-    }
-
     public ArrayList<CardType> getCards() {
         return mCards;
+    }
+
+    public PlayerColorType getColor() {
+        return mColor;
+    }
+
+    public PlayerPositionType getPosition() {
+        return mPosition;
+    }
+
+    public void setColor(PlayerColorType color) {
+        mColor = color;
+    }
+
+    public void setPosition(PlayerPositionType position) {
+        mPosition = position;
     }
 
     public DefaultListModel<ImageIcon> getModelCardImages() {

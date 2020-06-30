@@ -1,6 +1,6 @@
 package assignment.panel;
 
-import assignment.window.MainWindow;
+import assignment.frame.FrameMain;
 import java.awt.*;
 import java.util.HashMap;
 import javax.swing.*;
@@ -13,7 +13,7 @@ public final class PanelManager {
     private PanelType mCurrentPanelType;
 
     private PanelManager() {
-        MainWindow.getInstance().setLayout(mCardLayout);
+        FrameMain.getInstance().setLayout(mCardLayout);
     }
 
     public static PanelManager getInstance() {
@@ -35,12 +35,12 @@ public final class PanelManager {
         assert (panelType != null) : "panelType cannot be null";
         assert (mPanels.containsKey(panelType)) : "panelType does not exist";
         mCurrentPanelType = panelType;
-        mCardLayout.show(MainWindow.getInstance().getContentPane(), panelType.toString());
+        mCardLayout.show(FrameMain.getInstance().getContentPane(), panelType.toString());
         ((IUpdatable) getCurrentPanel()).updateComponents();
     }
 
     public void addPanel(PanelType panelType, JPanel panel) {
         mPanels.put(panelType, panel);
-        MainWindow.getInstance().add(panelType.toString(), panel);
+        FrameMain.getInstance().add(panelType.toString(), panel);
     }
 }

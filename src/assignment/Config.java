@@ -21,7 +21,7 @@ public class Config {
     private static String sUserId = DEFAULT_USER_ID;
     private static byte sLimitSecondsPerTurn = Byte.parseByte(DEFAULT_LIMIT_SECONDS_PER_TURN);
     private static byte sSoundEffectVolume = Byte.parseByte(DEFAULT_SOUND_EFFECT_VOLUME);
-    private static boolean bDebugMode = true;
+    private static boolean sbDebugMode = true;
 
     private Config() {
 
@@ -52,12 +52,12 @@ public class Config {
     }
 
     public static boolean getDebugMode() {
-        return bDebugMode;
+        return sbDebugMode;
     }
 
     public static void setDebugMode(boolean isDebugMode) {
-        if (Config.bDebugMode) {
-            Config.bDebugMode = isDebugMode;
+        if (Config.sbDebugMode) {
+            Config.sbDebugMode = isDebugMode;
         }
     }
 

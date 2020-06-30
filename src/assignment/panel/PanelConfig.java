@@ -2,7 +2,7 @@ package assignment.panel;
 
 import assignment.Config;
 import assignment.utility.StringUtility;
-import assignment.window.MainWindow;
+import assignment.frame.FrameMain;
 
 import java.awt.*;
 import javax.swing.*;
@@ -12,7 +12,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ConfigPanel extends JPanel implements IUpdatable {
+public class PanelConfig extends JPanel implements IUpdatable {
     private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
     private JTextField mTextFieldId = new JTextField(10);
     private JLabel mLabelLimitSecondsPerTurn = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
@@ -20,7 +20,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
     private JLabel mLabelSoundEffectVolume = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
     private JSlider mSliderSoundEffectVolume = new JSlider(0, 100, 100);
     
-    public ConfigPanel() {
+    public PanelConfig() {
         // TODO 이미지 버튼으로 구성
 
         setLayout(new GridBagLayout());
@@ -85,7 +85,7 @@ public class ConfigPanel extends JPanel implements IUpdatable {
                     Config.saveProperties();
                 }
                 else {
-                    JOptionPane.showMessageDialog(MainWindow.getInstance(), "아이디를 입력하세요.");
+                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "아이디를 입력하세요.");
                 }
             }
         });

@@ -11,9 +11,9 @@ public final class Spot {
     private static final int IMAGE_HEIGHT = 49;
 
     private BufferedImage mSubImage;
-    private ArrayList<Building> mBuildings = new ArrayList<>();
+    private ArrayList<Cake> mCakes = new ArrayList<>();
     private JLabel mLabelSpot;
-    private JLabel[] mLabelStories = new JLabel[BuildingLayerType.values().length];
+    private JLabel[] mLabelStories = new JLabel[CakeLayerType.values().length];
 
     public Spot() {
         mSubImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
@@ -24,16 +24,16 @@ public final class Spot {
         }
     }
 
-    public void stackBuilding(final Building building) {
-        mBuildings.add(building);
+    public void stackCake(final Cake cake) {
+        mCakes.add(cake);
     }
 
-    public int getBuildingStoryCount(final PlayerPositionType position) {
+    public int getCakeStoryCount(final PlayerPositionType position) {
         int count = 0;
 
-        for (var building : mBuildings) {
-            if (building.getPosition() == position) {
-                count += building.getLayer().getValue();
+        for (var cake : mCakes) {
+            if (cake.getPlayerPosition() == position) {
+                count += cake.getLayer().getValue();
             }
         }
 
