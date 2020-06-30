@@ -20,7 +20,7 @@ public class Program {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                final FrameMain frameMain = new FrameMain(900, 732);
+                final FrameMain frameMain = new FrameMain(Config.FRAME_WIDTH, Config.FRAME_HEIGHT);
                 frameMain.setVisible(true);
             }
         });

@@ -8,6 +8,37 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Config {
+    /*
+     *  Game Configuration
+     */
+    public static final int FRAME_WIDTH = 900;
+    public static final int FRAME_HEIGHT = 732;
+
+    public static final int CAKE_IMAGE_WIDTH = 32;
+    public static final int CAKE_IMAGE_HEIGHT = 96;
+
+    public static final int CARD_IMAGE_WIDTH = 64;
+    public static final int CARD_IMAGE_HEIGHT = 64;
+
+    public static final int SPOT_IMAGE_WIDTH = 49;
+    public static final int SPOT_IMAGE_HEIGHT = 49;
+
+    public static final int MARKER_IMAGE_WIDTH = 49;
+    public static final int MARKER_IMAGE_HEIGHT = 49;
+    public static final int MARKER_PANE_WIDTH = 64;
+    public static final int MARKER_PANE_HEIGHT = 72;
+
+    public static final int MAX_ROUND_COUNT = 4;
+    public static final int MAX_PLAYER_SIZE = 4;
+    public static final int MAX_CITY_SIZE = 6;
+    public static final int MAX_SELECTING_CAKE_COUNT = 6;
+
+    public static final int SPOT_ROW_PER_CITY = 2;
+    public static final int SPOT_COLUMN_PER_CITY = 3;
+
+    /*
+     * Property Configuration
+     */
     private static final String CONFIG_FILE_NAME = "config.properties";
 
     private static final String PROPERTY_USER_ID = "user_id";
@@ -31,7 +62,7 @@ public class Config {
         return sUserId;
     }
 
-    public static void setUserId(String sUserId) {
+    public static void setUserId(final String sUserId) {
         Config.sUserId = sUserId;
     }
 
@@ -39,7 +70,7 @@ public class Config {
         return sLimitSecondsPerTurn;
     }
 
-    public static void setLimitSecondsPerTurn(byte sLimitSecondsPerTurn) {
+    public static void setLimitSecondsPerTurn(final byte sLimitSecondsPerTurn) {
         Config.sLimitSecondsPerTurn = sLimitSecondsPerTurn;
     }
 
@@ -47,7 +78,7 @@ public class Config {
         return sSoundEffectVolume;
     }
 
-    public static void setSoundEffectVolume(byte sSoundEffectVolume) {
+    public static void setSoundEffectVolume(final byte sSoundEffectVolume) {
         Config.sSoundEffectVolume = sSoundEffectVolume;
     }
 
@@ -55,7 +86,7 @@ public class Config {
         return sbDebugMode;
     }
 
-    public static void setDebugMode(boolean isDebugMode) {
+    public static void setDebugMode(final boolean isDebugMode) {
         if (Config.sbDebugMode) {
             Config.sbDebugMode = isDebugMode;
         }

@@ -1,5 +1,6 @@
 package assignment.game.object;
 
+import assignment.Config;
 import assignment.Program;
 import assignment.utility.ResourceManager;
 import java.awt.*;
@@ -9,11 +10,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public final class Marker {
-    private static final int PANE_WIDTH = 64;
-    private static final int PANE_HEIGHT = 72;
-    private static final int IMAGE_WIDTH = 49;
-    private static final int IMAGE_HEIGHT = 49;
-
     private BufferedImage mSubImage;
     private JLayeredPane mLayeredPane;
     private JLabel mLabelMarker;
@@ -22,17 +18,17 @@ public final class Marker {
 
     public Marker(final Player player) {
         mPlayer = player;
-        mSubImage = ResourceManager.getInstance().getImageSetMarker().getSubimage(mPlayer.getPosition().getIndex() * IMAGE_WIDTH, mPlayer.getColor().getIndex() * IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
+        mSubImage = ResourceManager.getInstance().getImageSetMarker().getSubimage(mPlayer.getPosition().getIndex() * Config.MARKER_IMAGE_WIDTH, mPlayer.getColor().getIndex() * Config.MARKER_IMAGE_HEIGHT, Config.MARKER_IMAGE_WIDTH, Config.MARKER_IMAGE_HEIGHT);
 
         mLayeredPane = new JLayeredPane();
-        mLayeredPane.setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
+        mLayeredPane.setPreferredSize(new Dimension(Config.MARKER_PANE_WIDTH, Config.MARKER_PANE_HEIGHT));
 
         mLabelMarker = new JLabel(new ImageIcon(mSubImage));
-        mLabelMarker.setBounds(0, 0, PANE_WIDTH, PANE_HEIGHT);
+        mLabelMarker.setBounds(0, 0, Config.MARKER_PANE_WIDTH, Config.MARKER_PANE_HEIGHT);
         mLabelMarker.setHorizontalAlignment(SwingConstants.CENTER);
 
         mLabelId = new JLabel(mPlayer.getId());
-        mLabelId.setBounds(0, 0, PANE_WIDTH, PANE_HEIGHT);
+        mLabelId.setBounds(0, 0, Config.MARKER_PANE_WIDTH, Config.MARKER_PANE_HEIGHT);
         mLabelId.setHorizontalAlignment(SwingConstants.CENTER);
         mLabelId.setVerticalAlignment(SwingConstants.BOTTOM);
 

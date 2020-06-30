@@ -22,16 +22,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class PanelInGame extends JPanel implements IUpdatable {
-    private static final int CITY_SIZE = 6;
-    private static final int SPOT_ROW_PER_CITY = 2;
-    private static final int SPOT_COLUMN_PER_CITY = 3;
-    private static final int MAX_PLAYER_SIZE = 4;
-    private static final int MAX_SELECTING_BUILDING_COUNT = 6;
-    private static final int MAX_ROUND_COUNT = 4;
-
-    private static final int CAKE_IMAGE_WIDTH = 32;
-    private static final int CAKE_IMAGE_HEIGHT = 96;
-
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
@@ -65,7 +55,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
             mPlayers.add(new NetPlayer(id));
         }
         int computerNum = 0;
-        while (mPlayers.size() < MAX_PLAYER_SIZE) {
+        while (mPlayers.size() < Config.MAX_PLAYER_SIZE) {
             mPlayers.add(new AIPlayer("computer" + computerNum++));
         }
         Collections.shuffle(mPlayers);
@@ -89,7 +79,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
     }
 
     private void initializeBoard() {
-        for (int i = 0; i < CITY_SIZE; ++i) {
+        for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
             mCities.add(new City());
         }
     }
@@ -135,8 +125,8 @@ public class PanelInGame extends JPanel implements IUpdatable {
         JPanel panelMap = new JPanel(new GridLayout(2, 3));
         panelMap.setPreferredSize(new Dimension(486, 324));
 
-        JLayeredPane[] layeredPaneCities = new JLayeredPane[CITY_SIZE];
-        for (int i = 0; i < CITY_SIZE; ++i) {
+        JLayeredPane[] layeredPaneCities = new JLayeredPane[Config.MAX_CITY_SIZE];
+        for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
             layeredPaneCities[i] = new JLayeredPane();
             layeredPaneCities[i].setBackground(i % 2 > 0 ? Color.WHITE : Color.GRAY);
             layeredPaneCities[i].setOpaque(true); // transparent
@@ -223,7 +213,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
 
         panelCardList.add(listScroller);
 
-        JButton buttonPlayCard = new JButton("선택한 카드 내기");
+        var buttonPlayCard = new JButton("선택한 카드 내기");
         buttonPlayCard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -262,7 +252,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         JLabel[] labelPreviewCakes = new JLabel[size];
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            labelPreviewCakes[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(CAKE_IMAGE_WIDTH * i, 0, CAKE_IMAGE_WIDTH, CAKE_IMAGE_HEIGHT)));
+            labelPreviewCakes[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * i, 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT)));
             panel.add(labelPreviewCakes[i], gbc);
         }
 
@@ -272,7 +262,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         JSpinner[] spinners = new JSpinner[size];
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(MAX_SELECTING_BUILDING_COUNT, mMyPlayer.getCakeCount(stories[i])), 1));
+            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(stories[i])), 1));
             spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
             panel.add(spinners[i], gbc);
         }
@@ -294,7 +284,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         gbc.gridx = 0;
         gbc.gridwidth = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        JButton buttonApply = new JButton(mCurrentRoundCount + "라운드 시작");
+        var buttonApply = new JButton(mCurrentRoundCount + "라운드 시작");
         buttonApply.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -303,7 +293,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
                     cakeCount += (Integer) spinners[i].getValue();
                 }
 
-                if (cakeCount != MAX_SELECTING_BUILDING_COUNT) {
+                if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
                     JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
                     return;
                 }

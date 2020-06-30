@@ -1,5 +1,6 @@
 package assignment.game.object;
 
+import assignment.Config;
 import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import java.awt.image.BufferedImage;
@@ -7,16 +8,13 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 public final class Spot {
-    private static final int IMAGE_WIDTH = 49;
-    private static final int IMAGE_HEIGHT = 49;
-
     private BufferedImage mSubImage;
     private ArrayList<Cake> mCakes = new ArrayList<>();
     private JLabel mLabelSpot;
     private JLabel[] mLabelStories = new JLabel[CakeLayerType.values().length];
 
     public Spot() {
-        mSubImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        mSubImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(0, 0, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
 
         mLabelSpot = new JLabel(new ImageIcon(mSubImage));
         for (int i = 0; i < mLabelStories.length; ++i) {

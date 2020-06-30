@@ -1,5 +1,6 @@
 package assignment.game.object;
 
+import assignment.Config;
 import assignment.utility.ImageUtility;
 import assignment.utility.ResourceManager;
 import java.awt.image.BufferedImage;
@@ -8,9 +9,6 @@ import java.util.Random;
 import javax.swing.*;
 
 public class Player {
-    protected static final int CARD_IMAGE_WIDTH = 64;
-    protected static final int CARD_IMAGE_HEIGHT = 64;
-
     protected String mId;
     protected Marker mMarker;
     protected PlayerColorType mColor;
@@ -71,7 +69,7 @@ public class Player {
         dummyCards.remove(selectedIndex);
         mCards.add(selectedCard);
 
-        BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(CARD_IMAGE_HEIGHT * selectedCard.getIndex(), 0, CARD_IMAGE_WIDTH, CARD_IMAGE_HEIGHT);
+        BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(Config.CARD_IMAGE_HEIGHT * selectedCard.getIndex(), 0, Config.CARD_IMAGE_WIDTH, Config.CARD_IMAGE_HEIGHT);
         int degree = 90 * mPosition.getIndex();
         mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
     }
