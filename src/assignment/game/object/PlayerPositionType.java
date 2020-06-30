@@ -1,6 +1,6 @@
 package assignment.game.object;
 
-public enum MarkerPosition {
+public enum PlayerPositionType {
     SOUTH(0),
     WEST(1),
     NORTH(2),
@@ -8,7 +8,7 @@ public enum MarkerPosition {
 
     private int mIndex;
 
-    MarkerPosition(final int index) {
+    PlayerPositionType(final int index) {
         mIndex = index;
     }
 

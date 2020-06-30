@@ -19,21 +19,16 @@ public final class Marker {
     private JLayeredPane mLayeredPane;
     private JLabel mLabelMarker;
     private JLabel mLabelId;
-    private MarkerPosition mPosition;
-    private MarkerColor mColor;
+    private PlayerPositionType mPosition;
+    private PlayerColorType mColor;
 
-    public Marker(final String playerId, final MarkerPosition position, final MarkerColor color, final MarkerPosition standardPosition) {
+    public Marker(final String playerId, final PlayerPositionType position, final PlayerColorType color) {
         loadImage();
 
         mPosition = position;
         mColor = color;
 
-        int index = mPosition.getIndex() - standardPosition.getIndex();
-        while (index < 0) {
-            index += 4;
-        }
-
-        mSubImage = mImage.getSubimage(index * IMAGE_WIDTH, mColor.getIndex() * IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
+        mSubImage = mImage.getSubimage(mPosition.getIndex() * IMAGE_WIDTH, mColor.getIndex() * IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT);
 
         mLayeredPane = new JLayeredPane();
         mLayeredPane.setPreferredSize(new Dimension(PANE_WIDTH, PANE_HEIGHT));
@@ -74,7 +69,11 @@ public final class Marker {
         return mLabelId;
     }
 
-    public MarkerColor getColor() {
+    public PlayerColorType getColor() {
         return mColor;
+    }
+
+    public PlayerPositionType getPosition() {
+        return mPosition;
     }
 }

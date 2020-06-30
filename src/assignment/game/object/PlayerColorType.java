@@ -1,6 +1,6 @@
 package assignment.game.object;
 
-public enum MarkerColor {
+public enum PlayerColorType {
     RED(0),
     YELLOW(1),
     GREEN(2),
@@ -8,7 +8,7 @@ public enum MarkerColor {
 
     private int mIndex;
 
-    MarkerColor(final int index) {
+    PlayerColorType(final int index) {
         mIndex = index;
     }
 

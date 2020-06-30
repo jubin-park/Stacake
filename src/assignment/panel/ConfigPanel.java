@@ -21,7 +21,8 @@ public class ConfigPanel extends JPanel implements IUpdatable {
     private JSlider mSliderSoundEffectVolume = new JSlider(0, 100, 100);
     
     public ConfigPanel() {
-        //setBorder(new EmptyBorder(10, 10, 10, 10));
+        // TODO 이미지 버튼으로 구성
+
         setLayout(new GridBagLayout());
 
         JPanel panelNested = new JPanel(new GridBagLayout());

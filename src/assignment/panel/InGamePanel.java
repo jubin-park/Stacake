@@ -3,14 +3,15 @@ package assignment.panel;
 import assignment.Config;
 import assignment.Program;
 import assignment.game.object.AIPlayer;
-import assignment.game.object.BuildingStory;
+import assignment.game.object.BuildingLayerType;
 import assignment.game.object.CardType;
 import assignment.game.object.City;
-import assignment.game.object.MarkerColor;
+import assignment.game.object.PlayerColorType;
 import assignment.game.object.Marker;
-import assignment.game.object.MarkerPosition;
+import assignment.game.object.PlayerPositionType;
 import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
+import assignment.utility.ImageUtility;
 import assignment.window.MainWindow;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,7 +35,9 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private static final int MAX_ROUND_COUNT = 4;
 
     private static final String IMG_CAKES_PATH = "resources/images/cakes.png";
+    private static final String IMG_CARDS_PATH = "resources/images/cards.png";
     private static BufferedImage sImageCakes;
+    private static BufferedImage sImageCards;
 
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
@@ -45,12 +48,22 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private JPanel mPanelUI;
 
     public InGamePanel(String[] netPlayerIds) {
+        loadImages();
         locateMarkers(netPlayerIds);
         initializeBoard();
         initializeDummyCards();
 
         setLayout(new GridLayout(1, 1));
         add(createPanelMain());
+    }
+
+    private void loadImages() {
+        try {
+            sImageCakes = ImageIO.read(Program.class.getResourceAsStream(IMG_CAKES_PATH));
+            sImageCards = ImageIO.read(Program.class.getResourceAsStream(IMG_CARDS_PATH));
+        } catch (IOException ex) {
+
+        }
     }
 
     @Override
@@ -61,8 +74,8 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private void locateMarkers(String[] netPlayerIds) {
         Random rand = new Random(System.currentTimeMillis());
 
-        ArrayList<MarkerColor> colors = new ArrayList<MarkerColor>(Arrays.asList(MarkerColor.values()));
-        ArrayList<MarkerPosition> positions = new ArrayList<MarkerPosition>(Arrays.asList(MarkerPosition.values()));
+        ArrayList<PlayerColorType> colors = new ArrayList<PlayerColorType>(Arrays.asList(PlayerColorType.values()));
+        ArrayList<PlayerPositionType> positions = new ArrayList<PlayerPositionType>(Arrays.asList(PlayerPositionType.values()));
 
         mPlayers.add(mMyPlayer);
         for (var id : netPlayerIds) {
@@ -74,15 +87,10 @@ public class InGamePanel extends JPanel implements IUpdatable {
         }
         Collections.shuffle(mPlayers);
 
-        final int p = rand.nextInt(positions.size());
-        int n = p;
-
+        int i = 0;
         for (var player : mPlayers) {
             int c = rand.nextInt(colors.size());
-
-            player.setMarker(new Marker(player.getId(), positions.get(n), colors.get(c), positions.get(p)));
-            n = (n + 1) % 4;
-
+            player.setMarker(new Marker(player.getId(), positions.get(i++), colors.get(c)));
             colors.remove(c);
         }
     }
@@ -199,31 +207,91 @@ public class InGamePanel extends JPanel implements IUpdatable {
     }
 
     private JPanel createPanelUI() {
-        mPanelUI = new JPanel();
+        mPanelUI = new JPanel(new BorderLayout());
         mPanelUI.setBackground(Color.white);
+        //mPanelUI.setMinimumSize(new Dimension(800, 300));
 
-        mPanelUI.add(createPanelSelectBuildings());
+        // TODO
+        // 소유 빌딩 카드
+        // 소유 빌딩 블록
+        // 이번 라운드의 시작 플레이어
+        // 현재 라운드 수
+        // 현재 턴의 플레이어 행동
+        
+        mPanelUI.add(createPanelSelectUsableBuildings());
 
         return mPanelUI;
     }
 
-    private JPanel createPanelSelectBuildings() {
+    private JPanel createPanelCardList() {
+        JPanel panelCardList = new JPanel(new FlowLayout());
+        panelCardList.setOpaque(false);
+
+        var cards = mMyPlayer.getCards();
+        final int size = cards.size();
+
+        ImageIcon[] imageCards = new ImageIcon[size];
+
+        for (int i = 0; i < size; ++i) {
+            var card = cards.get(i);
+            int degree = 90 * mMyPlayer.getMarker().getPosition().getIndex();
+            imageCards[i] = new ImageIcon(ImageUtility.rotateImageClockwise(sImageCards.getSubimage(64 * card.getIndex(), 0, 64, 64), degree));
+        }
+
+        JList<ImageIcon> listCards = new JList<ImageIcon>();
+        listCards.setListData(imageCards);
+        listCards.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        listCards.setVisibleRowCount(-1);
+        listCards.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+
+        JScrollPane listScroller = new JScrollPane();
+        listScroller.setViewportView(listCards);
+        listScroller.setPreferredSize(new Dimension(300, 72));
+
+        panelCardList.add(listScroller);
+
+        return panelCardList;
+    }
+
+    private JPanel createPanelBuildingList() {
+        JPanel panelCardList = new JPanel(new FlowLayout());
+        panelCardList.setOpaque(false);
+
+        var cards = mMyPlayer.getCards();
+        final int size = cards.size();
+
+        ImageIcon[] imageCards = new ImageIcon[size];
+
+        for (int i = 0; i < size; ++i) {
+            var card = cards.get(i);
+            int degree = 90 * mMyPlayer.getMarker().getPosition().getIndex();
+            imageCards[i] = new ImageIcon(ImageUtility.rotateImageClockwise(sImageCards.getSubimage(64 * card.getIndex(), 0, 64, 64), degree));
+        }
+
+        JList<ImageIcon> listCards = new JList<ImageIcon>();
+        listCards.setListData(imageCards);
+        listCards.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        listCards.setVisibleRowCount(-1);
+        listCards.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+
+        JScrollPane listScroller = new JScrollPane();
+        listScroller.setViewportView(listCards);
+        listScroller.setPreferredSize(new Dimension(300, 96));
+
+        panelCardList.add(listScroller);
+
+        return panelCardList;
+    }
+
+    private JPanel createPanelSelectUsableBuildings() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
-
-        if (sImageCakes == null) {
-            try {
-                sImageCakes = ImageIO.read(Program.class.getResourceAsStream(IMG_CAKES_PATH));
-            } catch (IOException ex) {
-
-            }
-        }
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(2,2,2,2);
 
-        final int size = BuildingStory.values().length;
-        final BuildingStory[] stories = BuildingStory.values();
+        final int size = BuildingLayerType.values().length;
+        final BuildingLayerType[] stories = BuildingLayerType.values();
 
         gbc.gridy = 0;
         JLabel[] labelPreviewBuildings = new JLabel[size];
@@ -282,12 +350,18 @@ public class InGamePanel extends JPanel implements IUpdatable {
                     }
                 }
 
+                for (var player : mPlayers) {
+                    for (int i = 0; i < 4; ++i) {
+                        player.takeCardFromDummy(mDummyCards);
+                    }
+                }
+
+                mPanelUI.add(createPanelCardList());
+
                 Object source = e.getSource();
                 if (source instanceof Component) {
                     Component comp = (Component) source;
-                    var parent = comp.getParent();
-                    //parent.setVisible(false);
-                    mPanelUI.remove(parent);
+                    mPanelUI.remove(comp.getParent());
                     revalidate();
                     repaint();
                 }

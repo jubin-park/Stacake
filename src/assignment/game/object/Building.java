@@ -1,19 +1,19 @@
 package assignment.game.object;
 
 public final class Building {
-    private final MarkerColor mColor;
-    private final BuildingStory mStory;
+    private final PlayerPositionType mPosition;
+    private final BuildingLayerType mLayer;
 
-    public Building(final MarkerColor color, final BuildingStory story) {
-        mColor = color;
-        mStory = story;
+    public Building(final PlayerPositionType position, final BuildingLayerType story) {
+        mPosition = position;
+        mLayer = story;
     }
 
-    public MarkerColor getType() {
-        return mColor;
+    public PlayerPositionType getPosition() {
+        return mPosition;
     }
 
-    public BuildingStory getStory() {
-        return mStory;
+    public BuildingLayerType getLayer() {
+        return mLayer;
     }
 }

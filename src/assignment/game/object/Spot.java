@@ -17,7 +17,7 @@ public final class Spot {
     private BufferedImage mSubImage;
     private ArrayList<Building> mBuildings = new ArrayList<>();
     private JLabel mLabelSpot;
-    private JLabel[] mLabelStories = new JLabel[BuildingStory.values().length];
+    private JLabel[] mLabelStories = new JLabel[BuildingLayerType.values().length];
 
     public Spot() {
         loadImage();
@@ -43,12 +43,12 @@ public final class Spot {
         mBuildings.add(building);
     }
 
-    public int getBuildingStoryCount(final MarkerColor color) {
+    public int getBuildingStoryCount(final PlayerPositionType position) {
         int count = 0;
 
         for (var building : mBuildings) {
-            if (building.getType() == color) {
-                count += building.getStory().getValue();
+            if (building.getPosition() == position) {
+                count += building.getLayer().getValue();
             }
         }
 
