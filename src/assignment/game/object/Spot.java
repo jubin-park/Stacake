@@ -1,16 +1,12 @@
 package assignment.game.object;
 
-import assignment.Program;
+import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public final class Spot {
-    private static final String IMG_PATH = "resources/images/spots.png";
-    private static BufferedImage mImage;
     private static final int IMAGE_WIDTH = 49;
     private static final int IMAGE_HEIGHT = 49;
 
@@ -20,22 +16,11 @@ public final class Spot {
     private JLabel[] mLabelStories = new JLabel[BuildingLayerType.values().length];
 
     public Spot() {
-        loadImage();
-        mSubImage = mImage.getSubimage(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
+        mSubImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
 
         mLabelSpot = new JLabel(new ImageIcon(mSubImage));
         for (int i = 0; i < mLabelStories.length; ++i) {
             mLabelStories[i] = new JLabel(StringUtility.EMPTY + i);
-        }
-    }
-
-    private void loadImage() {
-        if (mImage == null) {
-            try {
-                mImage = ImageIO.read(Program.class.getResourceAsStream(IMG_PATH));
-            } catch (IOException ex) {
-
-            }
         }
     }
 

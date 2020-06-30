@@ -1,7 +1,6 @@
 package assignment.panel;
 
 import assignment.Config;
-import assignment.Program;
 import assignment.game.object.AIPlayer;
 import assignment.game.object.BuildingLayerType;
 import assignment.game.object.CardType;
@@ -11,18 +10,15 @@ import assignment.game.object.Marker;
 import assignment.game.object.PlayerPositionType;
 import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
-import assignment.utility.ImageUtility;
+import assignment.utility.ResourceManager;
 import assignment.window.MainWindow;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -34,10 +30,8 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private static final int MAX_SELECTING_BUILDING_COUNT = 6;
     private static final int MAX_ROUND_COUNT = 4;
 
-    private static final String IMG_CAKES_PATH = "resources/images/cakes.png";
-    private static final String IMG_CARDS_PATH = "resources/images/cards.png";
-    private static BufferedImage sImageCakes;
-    private static BufferedImage sImageCards;
+    private static final int CAKE_IMAGE_WIDTH = 32;
+    private static final int CAKE_IMAGE_HEIGHT = 96;
 
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
@@ -48,22 +42,12 @@ public class InGamePanel extends JPanel implements IUpdatable {
     private JPanel mPanelUI;
 
     public InGamePanel(String[] netPlayerIds) {
-        loadImages();
         locateMarkers(netPlayerIds);
         initializeBoard();
         initializeDummyCards();
 
         setLayout(new GridLayout(1, 1));
         add(createPanelMain());
-    }
-
-    private void loadImages() {
-        try {
-            sImageCakes = ImageIO.read(Program.class.getResourceAsStream(IMG_CAKES_PATH));
-            sImageCards = ImageIO.read(Program.class.getResourceAsStream(IMG_CARDS_PATH));
-        } catch (IOException ex) {
-
-        }
     }
 
     @Override
@@ -227,19 +211,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
         JPanel panelCardList = new JPanel(new FlowLayout());
         panelCardList.setOpaque(false);
 
-        var cards = mMyPlayer.getCards();
-        final int size = cards.size();
-
-        ImageIcon[] imageCards = new ImageIcon[size];
-
-        for (int i = 0; i < size; ++i) {
-            var card = cards.get(i);
-            int degree = 90 * mMyPlayer.getMarker().getPosition().getIndex();
-            imageCards[i] = new ImageIcon(ImageUtility.rotateImageClockwise(sImageCards.getSubimage(64 * card.getIndex(), 0, 64, 64), degree));
-        }
-
-        JList<ImageIcon> listCards = new JList<ImageIcon>();
-        listCards.setListData(imageCards);
+        JList<ImageIcon> listCards = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
         listCards.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         listCards.setVisibleRowCount(-1);
         listCards.setLayoutOrientation(JList.HORIZONTAL_WRAP);
@@ -250,35 +222,27 @@ public class InGamePanel extends JPanel implements IUpdatable {
 
         panelCardList.add(listScroller);
 
-        return panelCardList;
-    }
+        JButton buttonPlayCard = new JButton("선택한 카드 내기");
+        buttonPlayCard.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = listCards.getSelectedIndex();
+                if (selectedIndex < 0) {
+                    JOptionPane.showMessageDialog(MainWindow.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
 
-    private JPanel createPanelBuildingList() {
-        JPanel panelCardList = new JPanel(new FlowLayout());
-        panelCardList.setOpaque(false);
+                    return;
+                }
 
-        var cards = mMyPlayer.getCards();
-        final int size = cards.size();
+                var selectedCard = mMyPlayer.getCards().get(selectedIndex);
 
-        ImageIcon[] imageCards = new ImageIcon[size];
+                mMyPlayer.discardCardByIndex(selectedIndex);
+                mDummyCards.add(selectedCard);
+                Collections.shuffle(mDummyCards);
 
-        for (int i = 0; i < size; ++i) {
-            var card = cards.get(i);
-            int degree = 90 * mMyPlayer.getMarker().getPosition().getIndex();
-            imageCards[i] = new ImageIcon(ImageUtility.rotateImageClockwise(sImageCards.getSubimage(64 * card.getIndex(), 0, 64, 64), degree));
-        }
-
-        JList<ImageIcon> listCards = new JList<ImageIcon>();
-        listCards.setListData(imageCards);
-        listCards.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        listCards.setVisibleRowCount(-1);
-        listCards.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-
-        JScrollPane listScroller = new JScrollPane();
-        listScroller.setViewportView(listCards);
-        listScroller.setPreferredSize(new Dimension(300, 96));
-
-        panelCardList.add(listScroller);
+                buttonPlayCard.setEnabled(false);
+            }
+        });
+        panelCardList.add(buttonPlayCard);
 
         return panelCardList;
     }
@@ -297,7 +261,7 @@ public class InGamePanel extends JPanel implements IUpdatable {
         JLabel[] labelPreviewBuildings = new JLabel[size];
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            labelPreviewBuildings[i] = new JLabel(new ImageIcon(sImageCakes.getSubimage(32 * i, 0, 32, 96)));
+            labelPreviewBuildings[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(CAKE_IMAGE_WIDTH * i, 0, CAKE_IMAGE_WIDTH, CAKE_IMAGE_HEIGHT)));
             panel.add(labelPreviewBuildings[i], gbc);
         }
 

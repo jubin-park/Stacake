@@ -1,14 +1,25 @@
 package assignment.game.object;
 
+import assignment.Program;
+import assignment.utility.ImageUtility;
+import assignment.utility.ResourceManager;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class Player {
+    protected static final int CARD_IMAGE_WIDTH = 64;
+    protected static final int CARD_IMAGE_HEIGHT = 64;
+
     protected String mId;
     protected Marker mMarker;
     protected ArrayList<BuildingLayerType> mRemainBuildings = new ArrayList<BuildingLayerType>();
     protected ArrayList<BuildingLayerType> mUsableBuildings = new ArrayList<BuildingLayerType>();
     protected ArrayList<CardType> mCards = new ArrayList<CardType>();
+    protected DefaultListModel<ImageIcon> mModelCardImages = new DefaultListModel<ImageIcon>();
 
     public Player(String id) {
         mId = id;
@@ -48,10 +59,20 @@ public class Player {
         assert (!dummyCards.isEmpty());
 
         Random random = new Random(System.currentTimeMillis());
-        int index = random.nextInt(dummyCards.size());
+        int selectedIndex = random.nextInt(dummyCards.size());
+        var selectedCard = dummyCards.get(selectedIndex);
 
-        mCards.add(dummyCards.get(index));
-        dummyCards.remove(index);
+        dummyCards.remove(selectedIndex);
+        mCards.add(selectedCard);
+
+        BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(CARD_IMAGE_HEIGHT * selectedCard.getIndex(), 0, CARD_IMAGE_WIDTH, CARD_IMAGE_HEIGHT);
+        int degree = 90 * mMarker.getPosition().getIndex();
+        mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
+    }
+
+    public void discardCardByIndex(int index) {
+        mCards.remove(index);
+        mModelCardImages.remove(index);
     }
 
     public String getId() {
@@ -68,5 +89,9 @@ public class Player {
 
     public ArrayList<CardType> getCards() {
         return mCards;
+    }
+
+    public DefaultListModel<ImageIcon> getModelCardImages() {
+        return mModelCardImages;
     }
 }

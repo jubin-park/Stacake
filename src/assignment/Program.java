@@ -1,5 +1,6 @@
 package assignment;
 
+import assignment.utility.ResourceManager;
 import assignment.window.MainWindow;
 
 import javax.swing.*;
@@ -13,6 +14,8 @@ public class Program {
             Config.setDebugMode(false);
         }
         Config.loadAndUpdateProperties();
+
+        ResourceManager.getInstance();
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
