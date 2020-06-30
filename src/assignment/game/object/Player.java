@@ -1,12 +1,7 @@
 package assignment.game.object;
 
-import assignment.Config;
-import assignment.utility.ImageUtility;
-import assignment.utility.ResourceManager;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.swing.*;
 
 public class Player {
     protected String mId;
@@ -16,8 +11,6 @@ public class Player {
     protected ArrayList<Cake> mRemainCakes = new ArrayList<Cake>();
     protected ArrayList<Cake> mUsableCakes = new ArrayList<Cake>();
     protected ArrayList<CardType> mCards = new ArrayList<CardType>();
-    protected DefaultListModel<ImageIcon> mModelCardImages = new DefaultListModel<ImageIcon>();
-    protected DefaultListModel<ImageIcon> mModelUsableCakeImages = new DefaultListModel<ImageIcon>();
 
     public Player(final String id) {
         mId = id;
@@ -40,8 +33,6 @@ public class Player {
             if (cake.getLayer() == cakeLayerType) {
                 mRemainCakes.remove(i);
                 mUsableCakes.add(cake);
-                BufferedImage subImage = ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * (cakeLayerType.getValue() - 1), 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT);
-                mModelUsableCakeImages.addElement(new ImageIcon(subImage));
 
                 return;
             }
@@ -58,28 +49,27 @@ public class Player {
 
         dummyCards.remove(selectedIndex);
         mCards.add(selectedCard);
-
-        BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(Config.CARD_IMAGE_HEIGHT * selectedCard.getIndex(), 0, Config.CARD_IMAGE_WIDTH, Config.CARD_IMAGE_HEIGHT);
-        int degree = 90 * mPosition.getIndex();
-        mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
     }
 
-    public void discardCardByIndex(final int index) {
-        mCards.remove(index);
-        mModelCardImages.remove(index);
+    public void useCard(final CardType card) {
+        mCards.remove(card);
+    }
+
+    public void useCake(final Cake cake) {
+        mUsableCakes.remove(cake);
     }
 
     public void initializeCakes() {
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 12; ++i) {
             mRemainCakes.add(new Cake(CakeLayerType.ONE, mPosition));
         }
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 6; ++i) {
             mRemainCakes.add(new Cake(CakeLayerType.TWO, mPosition));
         }
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < 4; ++i) {
             mRemainCakes.add(new Cake(CakeLayerType.THREE, mPosition));
         }
-        for (int i = 0; i < 12; ++i) {
+        for (int i = 0; i < 2; ++i) {
             mRemainCakes.add(new Cake(CakeLayerType.FOUR, mPosition));
         }
     }
@@ -100,6 +90,10 @@ public class Player {
         return mCards;
     }
 
+    public ArrayList<Cake> getUsableCakes() {
+        return mUsableCakes;
+    }
+
     public PlayerColorType getColor() {
         return mColor;
     }
@@ -114,13 +108,5 @@ public class Player {
 
     public void setPosition(final PlayerPositionType position) {
         mPosition = position;
-    }
-
-    public DefaultListModel<ImageIcon> getModelCardImages() {
-        return mModelCardImages;
-    }
-
-    public DefaultListModel<ImageIcon> getModelUsableCakeImages() {
-        return mModelUsableCakeImages;
     }
 }

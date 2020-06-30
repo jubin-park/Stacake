@@ -26,39 +26,10 @@ public final class Spot {
 
         for (int i = 0; i < mLabelTotalLayers.length; ++i) {
             mLabelTotalLayers[i] = new JLabel();
-            //mLabelTotalLayers[i].setBackground(Color.ORANGE);
             mLabelTotalLayers[i].setOpaque(false);
         }
 
         mLabelTarget = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageTarget()));
-
-        mLabelTarget.addMouseListener(new MouseListener() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                FrameMain.getInstance().setCursor(Cursor.HAND_CURSOR);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                FrameMain.getInstance().setCursor(Cursor.getDefaultCursor());
-            }
-        });
-
         mLabelTarget.setCursor(new Cursor(Cursor.HAND_CURSOR));
         mLabelTarget.setOpaque(false);
         mLabelTarget.setVisible(false);
@@ -68,7 +39,7 @@ public final class Spot {
         mLabelTarget.setVisible(value);
     }
 
-    public void updateLabel() {
+    public void update() {
         for (var position : PlayerPositionType.values()) {
             int index = position.getIndex();
             int count = getCakeLayerCount(position);

@@ -5,15 +5,19 @@ import assignment.game.object.AIPlayer;
 import assignment.game.object.CakeLayerType;
 import assignment.game.object.CardType;
 import assignment.game.object.City;
+import assignment.game.object.MyPlayer;
 import assignment.game.object.PlayerColorType;
 import assignment.game.object.PlayerPositionType;
 import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
+import assignment.game.object.Spot;
 import assignment.utility.ResourceManager;
 import assignment.frame.FrameMain;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,10 +31,11 @@ public class PanelInGame extends JPanel implements IUpdatable {
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
-    private Player mMyPlayer = new Player(Config.getUserId());
+    private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private int mCurrentRoundCount = 1;
     private JPanel mPanelGridBag;
     private JPanel mPanelUI;
+    private JList<ImageIcon> mListCake;
 
     public PanelInGame(String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
@@ -126,6 +131,56 @@ public class PanelInGame extends JPanel implements IUpdatable {
             var city = new City();
             mCities.add(city);
             panelMap.add(city.getLayeredPane());
+
+            for (var spot : city.getSpots()) {
+                spot.getLabelTarget().addMouseListener(new MouseListener() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        int selectedIndex = mListCake.getSelectedIndex();
+                        if (selectedIndex < 0) {
+                            // TODO 카드 제출 후 사용 가능하도록
+
+                            return;
+                        }
+
+                        int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(),
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.QUESTION_MESSAGE);
+                        if (result != JOptionPane.YES_OPTION) {
+                            return;
+                        }
+
+                        var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
+                        mMyPlayer.useCake(cake);
+
+                        mListCake.setEnabled(false);
+                        mListCake.setSelectedIndex(-1);
+
+                        spot.stackCake(cake);
+                        spot.update();
+                    }
+
+                    @Override
+                    public void mousePressed(MouseEvent e) {
+
+                    }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+
+                    }
+
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        FrameMain.getInstance().setCursor(Cursor.HAND_CURSOR);
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        FrameMain.getInstance().setCursor(Cursor.getDefaultCursor());
+                    }
+                });
+            }
         }
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -219,31 +274,32 @@ public class PanelInGame extends JPanel implements IUpdatable {
             public void actionPerformed(ActionEvent e) {
                 int selectedIndex = listCard.getSelectedIndex();
                 if (selectedIndex < 0) {
-                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하세요.");
+                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하세요.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
 
                     return;
                 }
 
                 var selectedCard = mMyPlayer.getCards().get(selectedIndex);
 
-                mMyPlayer.discardCardByIndex(selectedIndex);
+                mMyPlayer.useCard(selectedCard);
                 mDummyCards.add(selectedCard);
                 Collections.shuffle(mDummyCards);
 
                 buttonPlayCard.setEnabled(false);
 
+                listCard.setSelectedIndex(-1);
                 listCard.setEnabled(false);
             }
         });
         panelCardList.add(buttonPlayCard);
 
-        JList<ImageIcon> listCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
-        listCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        listCake.setVisibleRowCount(-1);
-        listCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        mListCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
+        mListCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        mListCake.setVisibleRowCount(-1);
+        mListCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 
         JScrollPane listCakeScroller = new JScrollPane();
-        listCakeScroller.setViewportView(listCake);
+        listCakeScroller.setViewportView(mListCake);
         listCakeScroller.setPreferredSize(new Dimension(240, 108));
 
         panelCardList.add(listCakeScroller);
@@ -307,7 +363,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
                 }
 
                 if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
-                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
+                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
 
                     return;
                 }
