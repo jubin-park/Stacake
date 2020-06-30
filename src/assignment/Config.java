@@ -22,6 +22,10 @@ public final class Config {
 
     public static final int SPOT_IMAGE_WIDTH = 49;
     public static final int SPOT_IMAGE_HEIGHT = 49;
+    public static final int SPOT_LABEL_WIDTH = 37;
+    public static final int SPOT_LABEL_HEIGHT = 41;
+    public static final int SPOT_LABEL_OFFSET_X = 6;
+    public static final int SPOT_LABEL_OFFSET_Y = 4;
 
     public static final int MARKER_IMAGE_WIDTH = 49;
     public static final int MARKER_IMAGE_HEIGHT = 49;

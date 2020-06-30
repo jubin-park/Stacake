@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class PanelInGame extends JPanel implements IUpdatable {
     private ArrayList<City> mCities = new ArrayList<City>();
@@ -32,7 +34,6 @@ public class PanelInGame extends JPanel implements IUpdatable {
 
     public PanelInGame(String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
-        initializeBoard();
         initializeDummyCards();
 
         setLayout(new GridLayout(1, 1));
@@ -66,6 +67,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
             player.setColor(colors.get(colorIndex));
             colors.remove(colorIndex);
             player.setPosition(positions.get(positionIndex++));
+            player.initializeCakes();
             player.createMarker();
         }
     }
@@ -75,12 +77,6 @@ public class PanelInGame extends JPanel implements IUpdatable {
             for (int i = 0; i < 5; ++i) {
                 mDummyCards.add(card);
             }
-        }
-    }
-
-    private void initializeBoard() {
-        for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
-            mCities.add(new City());
         }
     }
 
@@ -123,31 +119,19 @@ public class PanelInGame extends JPanel implements IUpdatable {
         //panelBoard.setBackground(Color.PINK);
 
         JPanel panelMap = new JPanel(new GridLayout(2, 3));
-        panelMap.setPreferredSize(new Dimension(486, 324));
+        panelMap.setPreferredSize(new Dimension(480, 324));
+        panelMap.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        JLayeredPane[] layeredPaneCities = new JLayeredPane[Config.MAX_CITY_SIZE];
         for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
-            layeredPaneCities[i] = new JLayeredPane();
-            layeredPaneCities[i].setBackground(i % 2 > 0 ? Color.WHITE : Color.GRAY);
-            layeredPaneCities[i].setOpaque(true); // transparent
-
-            var city = mCities.get(i);
-            var spots = city.getSpots();
-            int spotSize = spots.size();
-
-            for (int j = 0; j < spotSize; ++j) {
-                var spot = city.getSpots().get(j);
-
-                spot.addTo(layeredPaneCities[i]);
-                spot.getLabelSpot().setBounds((j % 3) * 54, (j / 3) * 54, 49, 49);
-            }
-
-            panelMap.add(layeredPaneCities[i]);
+            var city = new City();
+            mCities.add(city);
+            panelMap.add(city.getLayeredPane());
         }
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.weightx = 1;
-        gbc.weighty = 1;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+
         gbc.gridx = 1;
         gbc.gridy = 1;
         panelBoard.add(panelMap, gbc);
@@ -202,24 +186,31 @@ public class PanelInGame extends JPanel implements IUpdatable {
         JPanel panelCardList = new JPanel(new FlowLayout());
         panelCardList.setOpaque(false);
 
-        JList<ImageIcon> listCards = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
-        listCards.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        listCards.setVisibleRowCount(-1);
-        listCards.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        JList<ImageIcon> listCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
+        listCard.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        listCard.setVisibleRowCount(-1);
+        listCard.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 
-        JScrollPane listScroller = new JScrollPane();
-        listScroller.setViewportView(listCards);
-        listScroller.setPreferredSize(new Dimension(300, 72));
+        listCard.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(final ListSelectionEvent e) {
+                
+            }
+        });
 
-        panelCardList.add(listScroller);
+        JScrollPane listCardScroller = new JScrollPane();
+        listCardScroller.setViewportView(listCard);
+        listCardScroller.setPreferredSize(new Dimension(300, 72));
+
+        panelCardList.add(listCardScroller);
 
         var buttonPlayCard = new JButton("선택한 카드 내기");
         buttonPlayCard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedIndex = listCards.getSelectedIndex();
+                int selectedIndex = listCard.getSelectedIndex();
                 if (selectedIndex < 0) {
-                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
+                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하세요.");
 
                     return;
                 }
@@ -231,9 +222,21 @@ public class PanelInGame extends JPanel implements IUpdatable {
                 Collections.shuffle(mDummyCards);
 
                 buttonPlayCard.setEnabled(false);
+                listCard.setEnabled(false);
             }
         });
         panelCardList.add(buttonPlayCard);
+
+        JList<ImageIcon> listCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
+        listCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        listCake.setVisibleRowCount(-1);
+        listCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+
+        JScrollPane listCakeScroller = new JScrollPane();
+        listCakeScroller.setViewportView(listCake);
+        listCakeScroller.setPreferredSize(new Dimension(280, 108));
+
+        panelCardList.add(listCakeScroller);
 
         return panelCardList;
     }
@@ -246,7 +249,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         gbc.insets = new Insets(2,2,2,2);
 
         final int size = CakeLayerType.values().length;
-        final CakeLayerType[] stories = CakeLayerType.values();
+        final CakeLayerType[] layers = CakeLayerType.values();
 
         gbc.gridy = 0;
         JLabel[] labelPreviewCakes = new JLabel[size];
@@ -262,7 +265,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         JSpinner[] spinners = new JSpinner[size];
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(stories[i])), 1));
+            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1));
             spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
             panel.add(spinners[i], gbc);
         }
@@ -272,7 +275,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         panel.add(new JLabel("잔여 개수"), gbc);
         for (int i = 0; i < size; ++i) {
             gbc.gridx = i + 1;
-            panel.add(new JLabel(String.format("%d", mMyPlayer.getCakeCount(stories[i]))), gbc);
+            panel.add(new JLabel(String.format("%d", mMyPlayer.getCakeCount(layers[i]))), gbc);
         }
 
         gbc.gridy = 3;
@@ -295,13 +298,14 @@ public class PanelInGame extends JPanel implements IUpdatable {
 
                 if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
                     JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.");
+
                     return;
                 }
 
                 for (int i = 0; i < size; ++i) {
                     int count = (Integer) spinners[i].getValue();
                     for (int c = 0; c < count; ++c) {
-                        mMyPlayer.takeCake(stories[i]);
+                        mMyPlayer.takeCake(layers[i]);
                     }
                 }
 
