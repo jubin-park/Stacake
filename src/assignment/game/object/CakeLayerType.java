@@ -8,7 +8,7 @@ public enum CakeLayerType {
 
     private int mValue;
 
-    CakeLayerType(int value) {
+    CakeLayerType(final int value) {
         mValue = value;
     }
 

@@ -8,10 +8,10 @@ import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class FrameMain extends JFrame {
+public final class FrameMain extends JFrame {
     private static FrameMain sInstance;
 
-    public FrameMain(int width, int height) {
+    public FrameMain(final int width, final int height) {
         super("Manhattan Game");
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -37,6 +37,8 @@ public class FrameMain extends JFrame {
     }
 
     public static FrameMain getInstance() {
+        assert (sInstance != null);
+
         return sInstance;
     }
 }

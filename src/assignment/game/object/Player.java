@@ -59,7 +59,7 @@ public class Player {
         assert (false);
     }
 
-    public void takeCardFromDummy(ArrayList<CardType> dummyCards) {
+    public void takeCardFromDummy(final ArrayList<CardType> dummyCards) {
         assert (!dummyCards.isEmpty());
 
         Random random = new Random(System.currentTimeMillis());
@@ -74,7 +74,7 @@ public class Player {
         mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
     }
 
-    public void discardCardByIndex(int index) {
+    public void discardCardByIndex(final int index) {
         mCards.remove(index);
         mModelCardImages.remove(index);
     }
@@ -103,11 +103,11 @@ public class Player {
         return mPosition;
     }
 
-    public void setColor(PlayerColorType color) {
+    public void setColor(final PlayerColorType color) {
         mColor = color;
     }
 
-    public void setPosition(PlayerPositionType position) {
+    public void setPosition(final PlayerPositionType position) {
         mPosition = position;
     }
 

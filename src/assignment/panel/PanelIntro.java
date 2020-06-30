@@ -24,7 +24,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         var buttonSinglePlay = new JButton("Single Play");
         buttonSinglePlay.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 var panelManager = PanelManager.getInstance();
                 panelManager.addPanel(PanelType.INGAME, new PanelInGame(new String[] {}));
                 panelManager.showPanel(PanelType.INGAME);
@@ -34,7 +34,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         var buttonCreateNetPlay = new JButton("Create NetPlay");
         buttonCreateNetPlay.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
 
             }
         });
@@ -42,7 +42,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         var buttonJoinNetPlay = new JButton("Join NetPlay");
         buttonJoinNetPlay.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
 
             }
         });
@@ -50,7 +50,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         var buttonConfig = new JButton("Configuration");
         buttonConfig.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 var panelManager = PanelManager.getInstance();
                 panelManager.addPanel(PanelType.CONFIG, new PanelConfig());
                 panelManager.showPanel(PanelType.CONFIG);
@@ -60,7 +60,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         var buttonExit = new JButton("Shutdown");
         buttonExit.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 Container frame = ((JButton) e.getSource()).getParent();
                 do {
                     frame = frame.getParent();
@@ -83,7 +83,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         setVisible(true);
     }
 
-    private void addOnPanel(JPanel panel, JComponent component, int gridX, int gridY, int gridWidth, int gridHeight) {
+    private void addOnPanel(final JPanel panel, final JComponent component, final int gridX, final int gridY, final int gridWidth, final int gridHeight) {
         mGridBagConstraints.gridx = gridX;
         mGridBagConstraints.gridy = gridY;
         mGridBagConstraints.gridwidth = gridWidth;

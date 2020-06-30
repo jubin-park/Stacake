@@ -1,14 +1,13 @@
 package assignment.game.object;
 
+import assignment.Config;
 import java.util.ArrayList;
 
 public final class City {
-    private static final int SPOT_COUNT = 9;
-
     private ArrayList<Spot> mSpots = new ArrayList<Spot>();
 
     public City() {
-        for (int i = 0; i < SPOT_COUNT; ++i) {
+        for (int i = 0; i < Config.SPOT_COUNT_PER_CITY; ++i) {
             mSpots.add(new Spot());
         }
     }

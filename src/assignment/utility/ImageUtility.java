@@ -8,24 +8,26 @@ public final class ImageUtility {
 
     }
 
-    public static BufferedImage copyImage(BufferedImage source){
-        BufferedImage b = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
-        Graphics g = b.getGraphics();
+    public static BufferedImage copyImage(final BufferedImage source){
+        BufferedImage dest = new BufferedImage(source.getWidth(), source.getHeight(), source.getType());
+
+        Graphics g = dest.getGraphics();
         g.drawImage(source, 0, 0, null);
         g.dispose();
-        return b;
+
+        return dest;
     }
 
-    public static BufferedImage rotateImageClockwise(BufferedImage src, double degree) {
-        final int width = src.getWidth();
-        final int height = src.getHeight();
+    public static BufferedImage rotateImageClockwise(final BufferedImage source, double degree) {
+        final int width = source.getWidth();
+        final int height = source.getHeight();
 
-        BufferedImage dest = new BufferedImage(height, width, src.getType());
+        BufferedImage dest = new BufferedImage(height, width, source.getType());
 
         Graphics2D graphics2D = dest.createGraphics();
         graphics2D.translate((height - width) / 2, (height - width) / 2);
         graphics2D.rotate(Math.PI * degree / 180.0, height / 2, width / 2);
-        graphics2D.drawRenderedImage(src, null);
+        graphics2D.drawRenderedImage(source, null);
 
         return dest;
     }

@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
-public class Config {
+public final class Config {
     /*
      *  Game Configuration
      */
@@ -33,6 +33,7 @@ public class Config {
     public static final int MAX_CITY_SIZE = 6;
     public static final int MAX_SELECTING_CAKE_COUNT = 6;
 
+    public static final int SPOT_COUNT_PER_CITY = 9;
     public static final int SPOT_ROW_PER_CITY = 2;
     public static final int SPOT_COLUMN_PER_CITY = 3;
 

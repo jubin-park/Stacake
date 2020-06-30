@@ -31,7 +31,7 @@ public final class PanelManager {
         return mPanels.get(mCurrentPanelType);
     }
 
-    public void showPanel(PanelType panelType) {
+    public void showPanel(final PanelType panelType) {
         assert (panelType != null) : "panelType cannot be null";
         assert (mPanels.containsKey(panelType)) : "panelType does not exist";
         mCurrentPanelType = panelType;

@@ -26,11 +26,11 @@ public final class Spot {
         mCakes.add(cake);
     }
 
-    public int getCakeStoryCount(final PlayerPositionType position) {
+    public int getCakeLayerCount(final PlayerPositionType playerPosition) {
         int count = 0;
 
         for (var cake : mCakes) {
-            if (cake.getPlayerPosition() == position) {
+            if (cake.getPlayerPosition() == playerPosition) {
                 count += cake.getLayer().getValue();
             }
         }
@@ -42,7 +42,7 @@ public final class Spot {
         return mLabelSpot;
     }
 
-    public void addTo(JComponent component) {
+    public void addTo(final JComponent component) {
         component.add(mLabelSpot);
         for (int i = 0; i < mLabelStories.length; ++i) {
             component.add(mLabelStories[i]);
