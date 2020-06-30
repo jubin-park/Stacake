@@ -153,11 +153,12 @@ public class PanelInGame extends JPanel implements IUpdatable {
                         var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
                         mMyPlayer.useCake(cake);
 
-                        mListCake.setEnabled(false);
+                        //mListCake.setEnabled(false);
                         mListCake.setSelectedIndex(-1);
 
                         spot.stackCake(cake);
                         spot.update();
+                        spot.updateSpotColor(mMyPlayer);
                     }
 
                     @Override

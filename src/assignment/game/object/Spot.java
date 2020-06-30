@@ -1,27 +1,21 @@
 package assignment.game.object;
 
 import assignment.Config;
-import assignment.frame.FrameMain;
 import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.*;
 
 public final class Spot {
-    private BufferedImage mSubImage;
     private ArrayList<Cake> mCakes = new ArrayList<>();
     private JLabel mLabelSpot;
     private JLabel mLabelTarget;
     private JLabel[] mLabelTotalLayers = new JLabel[PlayerPositionType.values().length];
 
     public Spot() {
-        mSubImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(0, 0, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
-        mLabelSpot = new JLabel(new ImageIcon(mSubImage));
+        mLabelSpot = new JLabel(ResourceManager.getInstance().getImageIconDefaultSpot());
         mLabelSpot.setOpaque(false);
 
         for (int i = 0; i < mLabelTotalLayers.length; ++i) {
@@ -50,6 +44,14 @@ public final class Spot {
                 mLabelTotalLayers[index].setText(StringUtility.EMPTY);
             }
         }
+    }
+
+    public void updateSpotColor(final Player player) {
+        //mLabelSpot.setIcon(ResourceManager.getInstance().getImageIconDefaultSpot());
+        int x = player.getPosition().getIndex() * Config.SPOT_IMAGE_WIDTH;
+        int y = player.getColor().getIndex() * Config.SPOT_IMAGE_HEIGHT;
+        var subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
+        mLabelSpot.setIcon(new ImageIcon(subImage));
     }
 
     public JLabel getLabelSpot() {
