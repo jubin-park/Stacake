@@ -1,20 +1,20 @@
 package assignment.game.object;
 
 public final class Cake {
-    private final CakeLayerType mLayer;
-    private final PlayerPositionType mPlayerPosition;
+    private final CakeLayerType mLayerType;
+    private final PlayerPositionType mPlayerPositionType;
 
-    public Cake(final CakeLayerType layer, final PlayerPositionType playerPosition) {
-        mLayer = layer;
-        mPlayerPosition = playerPosition;
+    public Cake(final CakeLayerType mLayer, final PlayerPositionType playerPositionType) {
+        mLayerType = mLayer;
+        mPlayerPositionType = playerPositionType;
     }
 
     public CakeLayerType getLayer() {
-        return mLayer;
+        return mLayerType;
     }
 
     public PlayerPositionType getPlayerPosition() {
-        return mPlayerPosition;
+        return mPlayerPositionType;
     }
 
     @Override
@@ -28,6 +28,6 @@ public final class Cake {
         }
 
         Cake otherCake = (Cake) obj;
-        return mLayer == otherCake.mLayer && mPlayerPosition == otherCake.mPlayerPosition;
+        return mLayerType == otherCake.mLayerType && mPlayerPositionType == otherCake.mPlayerPositionType;
     }
 }

@@ -28,14 +28,10 @@ public final class Spot {
         mLabelTarget.setVisible(false);
     }
 
-    public void setTargetVisible(final boolean value) {
-        mLabelTarget.setVisible(value);
-    }
-
-    public void update() {
-        for (var position : PlayerPositionType.values()) {
-            int index = position.getIndex();
-            int count = getCakeLayerCount(position);
+    public void updateLabels() {
+        for (var positionType : PlayerPositionType.values()) {
+            int index = positionType.getIndex();
+            int count = getCakeLayerCount(positionType);
 
             if (count > 0) {
                 mLabelTotalLayers[index].setText(StringUtility.EMPTY + count);
@@ -52,26 +48,14 @@ public final class Spot {
         mLabelSpot.setIcon(new ImageIcon(subImage));
     }
 
-    public JLabel getLabelSpot() {
-        return mLabelSpot;
-    }
-
-    public JLabel getLabelTarget() {
-        return mLabelTarget;
-    }
-
-    public JLabel[] getLabelTotalLayers() {
-        return mLabelTotalLayers;
-    }
-
     public void stackCake(final Cake cake) {
         mCakes.add(cake);
     }
 
-    public int getCakeLayerCount(final PlayerPositionType playerPosition) {
+    public int getCakeLayerCount(final PlayerPositionType playerPositionType) {
         int count = 0;
         for (var cake : mCakes) {
-            if (cake.getPlayerPosition() == playerPosition) {
+            if (cake.getPlayerPosition() == playerPositionType) {
                 count += cake.getLayer().getValue();
             }
         }
@@ -82,11 +66,9 @@ public final class Spot {
     public boolean isStackable(final Cake targetCake) {
         int targetLayerCount = 0;
         int maxLayerCount = 0;
-
-        for (var position : PlayerPositionType.values()) {
-            int count = getCakeLayerCount(position);
-
-            if (position == targetCake.getPlayerPosition()) {
+        for (var positionType : PlayerPositionType.values()) {
+            int count = getCakeLayerCount(positionType);
+            if (positionType == targetCake.getPlayerPosition()) {
                 targetLayerCount = count;
 
                 continue;
@@ -106,5 +88,21 @@ public final class Spot {
             layeredPane.add(label);
         }
         layeredPane.add(mLabelSpot);
+    }
+
+    public JLabel getLabelSpot() {
+        return mLabelSpot;
+    }
+
+    public JLabel getLabelTarget() {
+        return mLabelTarget;
+    }
+
+    public JLabel[] getLabelTotalLayers() {
+        return mLabelTotalLayers;
+    }
+
+    public void setTargetVisible(final boolean value) {
+        mLabelTarget.setVisible(value);
     }
 }

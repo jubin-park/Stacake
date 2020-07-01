@@ -53,7 +53,7 @@ public final class MyPlayer extends Player {
         mCards.add(selectedCard);
 
         BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(Config.CARD_IMAGE_HEIGHT * selectedCard.getIndex(), 0, Config.CARD_IMAGE_WIDTH, Config.CARD_IMAGE_HEIGHT);
-        int degree = 90 * mPosition.getIndex();
+        int degree = 90 * mPositionType.getIndex();
         mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
     }
 

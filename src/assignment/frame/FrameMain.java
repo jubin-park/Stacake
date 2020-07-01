@@ -1,5 +1,6 @@
 package assignment.frame;
 
+import assignment.Config;
 import assignment.panel.PanelIntro;
 import assignment.panel.PanelManager;
 import assignment.panel.PanelType;
@@ -12,7 +13,7 @@ public final class FrameMain extends JFrame {
     private static FrameMain sInstance;
 
     public FrameMain(final int width, final int height) {
-        super("Manhattan Game");
+        super(Config.FRAME_TITLE);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {

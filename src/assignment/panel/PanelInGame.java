@@ -28,11 +28,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 public class PanelInGame extends JPanel implements IUpdatable {
+    private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
-    private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private int mCurrentRoundCount = 1;
+
     private JPanel mPanelGridBag;
     private JPanel mPanelUI;
     private JList<ImageIcon> mListCake;
@@ -162,7 +163,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
                         mListCake.setSelectedIndex(-1);
 
                         spot.stackCake(cake);
-                        spot.update();
+                        spot.updateLabels();
                         spot.updateSpotColor(mMyPlayer);
                     }
 

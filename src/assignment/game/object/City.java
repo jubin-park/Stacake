@@ -1,14 +1,10 @@
 package assignment.game.object;
 
 import assignment.Config;
-import java.awt.*;
 import java.util.ArrayList;
 import javax.swing.*;
 
 public final class City {
-    private ArrayList<Spot> mSpots = new ArrayList<Spot>();
-    private JLayeredPane mLayeredPane;
-
     private static int[][] INDICES_2D_MAP= new int[][] {
             {0, 1, 2, 3, 4, 5, 6, 7, 8},
             {2, 5, 8, 1, 4, 7, 0, 3, 6},
@@ -21,6 +17,10 @@ public final class City {
     {8, 7, 6, 5, 4, 3, 2, 1, 0},
     {2, 5, 8, 1, 4, 7, 0, 3, 6}
      */
+
+    private ArrayList<Spot> mSpots = new ArrayList<Spot>();
+
+    private JLayeredPane mLayeredPane;
 
     public City() {
         mLayeredPane = new JLayeredPane();
@@ -51,7 +51,7 @@ public final class City {
             labels[3].setHorizontalAlignment(SwingConstants.RIGHT);
             labels[3].setVerticalAlignment(SwingConstants.CENTER);
             labels[3].setBounds(x + Config.SPOT_LABEL_OFFSET_X, y + Config.SPOT_LABEL_OFFSET_Y, Config.SPOT_LABEL_WIDTH, Config.SPOT_LABEL_HEIGHT);
-            spot.update();
+            spot.updateLabels();
 
             spot.getLabelTarget().setBounds(x, y, Config.TARGET_IMAGE_WIDTH, Config.TARGET_IMAGE_HEIGHT);
 
@@ -59,17 +59,13 @@ public final class City {
         }
     }
 
-    public void updatePreview(final CardType card, final PlayerPositionType playerPosition) {
+    public void updatePreview(final CardType card, final PlayerPositionType playerPositionType) {
         for (var spot : mSpots) {
             spot.setTargetVisible(false);
         }
 
-        int index = INDICES_2D_MAP[playerPosition.getIndex()][card.getIndex()];
+        int index = INDICES_2D_MAP[playerPositionType.getIndex()][card.getIndex()];
         mSpots.get(index).setTargetVisible(true);
-    }
-
-    public Spot getSpot(final int index) {
-        return mSpots.get(index);
     }
 
     public ArrayList<Spot> getSpots() {

@@ -1,20 +1,18 @@
 package assignment.game.object;
 
 import assignment.Config;
-import assignment.Program;
 import assignment.utility.ResourceManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public final class Marker {
+    private Player mPlayer;
+
     private BufferedImage mSubImage;
     private JLayeredPane mLayeredPane;
     private JLabel mLabelMarker;
     private JLabel mLabelId;
-    private Player mPlayer;
 
     public Marker(final Player player) {
         mPlayer = player;

@@ -6,8 +6,9 @@ import java.util.Random;
 public class Player {
     protected String mId;
     protected Marker mMarker;
-    protected PlayerColorType mColor;
-    protected PlayerPositionType mPosition;
+    protected PlayerColorType mColorType;
+    protected PlayerPositionType mPositionType;
+
     protected ArrayList<Cake> mRemainCakes = new ArrayList<Cake>();
     protected ArrayList<Cake> mUsableCakes = new ArrayList<Cake>();
     protected ArrayList<CardType> mCards = new ArrayList<CardType>();
@@ -61,16 +62,16 @@ public class Player {
 
     public void initializeCakes() {
         for (int i = 0; i < 12; ++i) {
-            mRemainCakes.add(new Cake(CakeLayerType.ONE, mPosition));
+            mRemainCakes.add(new Cake(CakeLayerType.ONE, mPositionType));
         }
         for (int i = 0; i < 6; ++i) {
-            mRemainCakes.add(new Cake(CakeLayerType.TWO, mPosition));
+            mRemainCakes.add(new Cake(CakeLayerType.TWO, mPositionType));
         }
         for (int i = 0; i < 4; ++i) {
-            mRemainCakes.add(new Cake(CakeLayerType.THREE, mPosition));
+            mRemainCakes.add(new Cake(CakeLayerType.THREE, mPositionType));
         }
         for (int i = 0; i < 2; ++i) {
-            mRemainCakes.add(new Cake(CakeLayerType.FOUR, mPosition));
+            mRemainCakes.add(new Cake(CakeLayerType.FOUR, mPositionType));
         }
     }
 
@@ -95,18 +96,18 @@ public class Player {
     }
 
     public PlayerColorType getColor() {
-        return mColor;
+        return mColorType;
     }
 
     public PlayerPositionType getPosition() {
-        return mPosition;
+        return mPositionType;
     }
 
-    public void setColor(final PlayerColorType color) {
-        mColor = color;
+    public void setColor(final PlayerColorType colorType) {
+        mColorType = colorType;
     }
 
-    public void setPosition(final PlayerPositionType position) {
-        mPosition = position;
+    public void setPosition(final PlayerPositionType positionType) {
+        mPositionType = positionType;
     }
 }
