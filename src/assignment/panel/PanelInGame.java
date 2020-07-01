@@ -99,7 +99,6 @@ public class PanelInGame extends JPanel implements IUpdatable {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        //gbc.weightx = 1.0;
         mPanelGridBag.add(createPanelBoard(), gbc);
 
         gbc.gridx = 1;
@@ -111,8 +110,6 @@ public class PanelInGame extends JPanel implements IUpdatable {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 2;
-        //gbc.weightx = 1.0;
-        //gbc.weighty = 0.4;
         mPanelGridBag.add(createPanelUI(), gbc);
 
         panelMain.add(mPanelGridBag);
@@ -122,7 +119,6 @@ public class PanelInGame extends JPanel implements IUpdatable {
 
     private JPanel createPanelBoard() {
         JPanel panelBoard = new JPanel(new GridBagLayout());
-        //panelBoard.setBackground(Color.PINK);
 
         JPanel panelMap = new JPanel(new GridLayout(2, 3));
         panelMap.setPreferredSize(new Dimension(480, 324));
@@ -360,7 +356,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         gbc.gridx = 0;
         gbc.gridwidth = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        var buttonApply = new JButton(mCurrentRoundCount + "라운드 시작");
+        var buttonApply = new JButton(mTurnCount + "라운드 시작");
         buttonApply.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

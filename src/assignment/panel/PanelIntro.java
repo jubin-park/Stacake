@@ -19,7 +19,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
         var gbc = new GridBagConstraints();
 
         // title
-        var labelTitle = new JLabel("<html><h1><strong><i>Manhattan Game</i></strong></h1><hr></html>");
+        var labelTitle = new JLabel("<html><h1><strong><i>- Stacake -</i></strong></h1><p>Stack pieces of cake<hr></html>");
         panelButtonList.add(labelTitle);
 
         // buttons
