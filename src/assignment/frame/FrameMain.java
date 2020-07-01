@@ -1,6 +1,7 @@
 package assignment.frame;
 
 import assignment.Config;
+import assignment.Program;
 import assignment.panel.PanelIntro;
 import assignment.panel.PanelManager;
 import assignment.panel.PanelType;
@@ -11,6 +12,7 @@ import java.awt.event.WindowEvent;
 
 public final class FrameMain extends JFrame {
     private static FrameMain sInstance;
+    private boolean mbRunning;
 
     public FrameMain(final int width, final int height) {
         super(Config.FRAME_TITLE);
@@ -21,6 +23,7 @@ public final class FrameMain extends JFrame {
             public void windowClosing(WindowEvent e) {
             FrameMain.this.setVisible(false);
             FrameMain.this.dispose();
+            mbRunning = false;
             }
         });
 
@@ -41,5 +44,13 @@ public final class FrameMain extends JFrame {
         assert (sInstance != null);
 
         return sInstance;
+    }
+
+    public boolean isRunning() {
+        return mbRunning;
+    }
+
+    public void setRunning(final boolean bRunning) {
+        mbRunning = bRunning;
     }
 }

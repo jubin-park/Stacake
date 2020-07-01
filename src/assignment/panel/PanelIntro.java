@@ -28,8 +28,10 @@ public class PanelIntro extends JPanel implements IUpdatable {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 var panelManager = PanelManager.getInstance();
-                panelManager.addPanel(PanelType.INGAME, new PanelInGame(new String[] {}));
+                var panelInGame = new PanelInGame(new String[] {});
+                panelManager.addPanel(PanelType.INGAME, panelInGame);
                 panelManager.showPanel(PanelType.INGAME);
+                panelInGame.start();
             }
         });
         panelButtonList.add(buttonSinglePlay);

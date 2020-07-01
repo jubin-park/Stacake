@@ -42,6 +42,10 @@ public final class Spot {
     }
 
     public void updateSpotColor(final Player player) {
+        if (getCakeLayerCount(player.getPosition()) <= 0) {
+            mLabelSpot.setIcon(ResourceManager.getInstance().getImageIconDefaultSpot());
+            return;
+        }
         int x = player.getPosition().getIndex()  * Config.SPOT_IMAGE_WIDTH;
         int y = (player.getColor().getIndex() + 1) * Config.SPOT_IMAGE_HEIGHT;
         var subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
@@ -56,7 +60,7 @@ public final class Spot {
         int count = 0;
         for (var cake : mCakes) {
             if (cake.getPlayerPosition() == playerPositionType) {
-                count += cake.getLayer().getValue();
+                count += cake.getLayerType().getValue();
             }
         }
 
@@ -79,7 +83,7 @@ public final class Spot {
             }
         }
 
-        return targetLayerCount + targetCake.getLayer().getValue() >= maxLayerCount;
+        return targetLayerCount + targetCake.getLayerType().getValue() >= maxLayerCount;
     }
 
     public void addToJLayeredPane(final JLayeredPane layeredPane) {

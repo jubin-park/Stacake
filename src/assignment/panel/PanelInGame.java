@@ -1,7 +1,9 @@
 package assignment.panel;
 
 import assignment.Config;
+import assignment.game.GameFlowType;
 import assignment.game.object.AIPlayer;
+import assignment.game.object.Cake;
 import assignment.game.object.CakeLayerType;
 import assignment.game.object.CardType;
 import assignment.game.object.City;
@@ -27,16 +29,24 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class PanelInGame extends JPanel implements IUpdatable {
+public class PanelInGame extends JPanel implements Runnable, IUpdatable {
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
-    private int mCurrentRoundCount = 1;
+
+    private int mTurnCount;
+    private int mRoundCount;
+    private int mStartPlayerIndex;
+
+    private GameFlowType mGameFlow = GameFlowType.GAME_START;
+    private String[] netPlayerIds;
 
     private JPanel mPanelGridBag;
     private JPanel mPanelUI;
     private JList<ImageIcon> mListCake;
+    private JList<ImageIcon> mListCard;
+    private JButton mButtonPlayCard = new JButton("선택한 카드 내기");
 
     public PanelInGame(String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
@@ -47,11 +57,166 @@ public class PanelInGame extends JPanel implements IUpdatable {
     }
 
     @Override
-    public void updateComponents() {
+    public void run() {
+        int fps = 1;
+        double tickPerSecond = 1_000_000_000 / fps;
+        double delta = 0;
+        long now;
+        long lastTime = System.nanoTime();
 
+        int maxTurnCount = Config.MAX_PLAYER_SIZE * Config.MAX_ROUND_COUNT;
+        var frameMain = FrameMain.getInstance();
+        while (frameMain.isRunning() && mTurnCount < maxTurnCount) {
+            now = System.nanoTime();
+            delta += (now - lastTime) / tickPerSecond;
+            lastTime = now;
+
+            if (delta >= 1.0) {
+                updateComponents();
+                delta--;
+            }
+        }
     }
 
-    private void locateMarkers(String[] netPlayerIds) {
+    public synchronized void start() {
+        var thread = new Thread(this);
+        FrameMain.getInstance().setRunning(true);
+        thread.start();
+    }
+
+    public synchronized void stop() {
+        FrameMain.getInstance().setRunning(false);
+    }
+
+    @Override
+    public synchronized void updateComponents() {
+        switch (mGameFlow) {
+            case GAME_START:
+                System.out.println("환영합니다.");
+
+                // 랜덤 카드 4장씩 분배
+                for (var player : mPlayers) {
+                    for (int i = 0; i < 4; ++i) {
+                        player.takeCardFromDummy(mDummyCards);
+                    }
+                }
+
+                mGameFlow = GameFlowType.CHOOSE_SIX_CAKES;
+                break;
+
+            case CHOOSE_SIX_CAKES:
+                // AIPlayer 케이크 6개 선택
+                for (var player : mPlayers) {
+                    if (player == mMyPlayer || player.isCakeSelectingFinished()) {
+                        continue;
+                    }
+
+                    assert (player instanceof AIPlayer);
+
+                    var ai = (AIPlayer) player;
+                    for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
+                        ai.takeRandomCake();
+                    }
+
+                    ai.setCakeSelectingFinished(true);
+                }
+
+                // 케이크 6개 선택중?
+                for (var player : mPlayers) {
+                    if (!player.isCakeSelectingFinished()) {
+                        return;
+                    }
+                }
+
+                System.out.println(String.format("%d %s", mRoundCount, "라운드 시작"));
+
+                Random random = new Random(System.currentTimeMillis());
+                mStartPlayerIndex = random.nextInt(Config.MAX_PLAYER_SIZE);
+                System.out.println(String.format("%s(index=%d) %s", mPlayers.get(mStartPlayerIndex).getId(), mStartPlayerIndex, "님부터 시작합니다."));
+
+                mGameFlow = GameFlowType.USE_CARD_AND_CAKE;
+                break;
+
+            case USE_CARD_AND_CAKE:
+                if (mTurnCount >= Config.MAX_PLAYER_SIZE) {
+                    ++mRoundCount;
+
+                    if (mRoundCount >= Config.MAX_ROUND_COUNT) {
+                        mTurnCount = 0;
+                        mGameFlow = GameFlowType.GAME_OVER;
+
+                        mListCake.setEnabled(true);
+                        mListCard.setEnabled(true);
+                        mButtonPlayCard.setEnabled(true);
+
+                        return;
+                    }
+
+                    mTurnCount = 0;
+
+                    for (var player : mPlayers) {
+                        player.setCakeSelectingFinished(false);
+                    }
+                    mGameFlow = GameFlowType.CHOOSE_SIX_CAKES;
+
+                    return;
+                }
+
+                int index = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
+                var targetPlayer = mPlayers.get(index);
+                if (targetPlayer == mMyPlayer) {
+                    mListCake.setEnabled(true);
+                    mListCard.setEnabled(true);
+                    mButtonPlayCard.setEnabled(true);
+                    return;
+                } else {
+                    mListCake.setEnabled(false);
+                    mListCard.setEnabled(false);
+                    mButtonPlayCard.setEnabled(false);
+                }
+
+                var ai = (AIPlayer) targetPlayer;
+                var card = ai.useRandomCard();
+                mDummyCards.add(card);
+
+                ArrayList<Spot> targetSpots = new ArrayList<Spot>();
+                ArrayList<Cake> targetCakes = new ArrayList<Cake>();
+                for (var city : mCities) {
+                    var spot = city.getSpotByCake(card, ai.getPosition());
+                    for (var cake : ai.getUsableCakes()) {
+                        if (spot.isStackable(cake)) {
+                            targetSpots.add(spot);
+                            targetCakes.add(cake);
+                        }
+                    }
+                }
+
+                Random random2 = new Random(System.currentTimeMillis());
+                int index2 = random2.nextInt(targetSpots.size());
+                var targetSpot = targetSpots.get(index2);
+                var targetCake = targetCakes.get(index2);
+
+                targetSpot.stackCake(targetCake);
+                targetSpot.updateLabels();
+                for (var city : mCities) {
+                    for (var spot : city.getSpots()) {
+                        spot.updateSpotColor(ai);
+                    }
+                }
+
+                ++mTurnCount;
+
+                break;
+
+            case GAME_OVER:
+                break;
+
+            default:
+                assert (false);
+        }
+    }
+
+    private synchronized void locateMarkers(String[] netPlayerIds) {
         Random rand = new Random(System.currentTimeMillis());
 
         ArrayList<PlayerColorType> colors = new ArrayList<PlayerColorType>(Arrays.asList(PlayerColorType.values()));
@@ -161,6 +326,8 @@ public class PanelInGame extends JPanel implements IUpdatable {
                         spot.stackCake(cake);
                         spot.updateLabels();
                         spot.updateSpotColor(mMyPlayer);
+
+                        ++mTurnCount;
                     }
 
                     @Override
@@ -244,15 +411,15 @@ public class PanelInGame extends JPanel implements IUpdatable {
         JPanel panelCardList = new JPanel(new FlowLayout());
         panelCardList.setOpaque(false);
 
-        JList<ImageIcon> listCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
-        listCard.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        listCard.setVisibleRowCount(-1);
-        listCard.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-
-        listCard.addListSelectionListener(new ListSelectionListener() {
+        mListCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
+        mListCard.setEnabled(false);
+        mListCard.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        mListCard.setVisibleRowCount(-1);
+        mListCard.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        mListCard.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(final ListSelectionEvent e) {
-                int selectedIndex = listCard.getSelectedIndex();
+                int selectedIndex = mListCard.getSelectedIndex();
                 if (selectedIndex < 0) {
 
                     return;
@@ -265,17 +432,18 @@ public class PanelInGame extends JPanel implements IUpdatable {
             }
         });
 
-        JScrollPane listCardScroller = new JScrollPane();
-        listCardScroller.setViewportView(listCard);
-        listCardScroller.setPreferredSize(new Dimension(300, 72));
+        JScrollPane mListCardScroller = new JScrollPane();
+        mListCardScroller.setViewportView(mListCard);
+        mListCardScroller.setPreferredSize(new Dimension(300, 72));
 
-        panelCardList.add(listCardScroller);
+        panelCardList.add(mListCardScroller);
 
-        var buttonPlayCard = new JButton("선택한 카드 내기");
-        buttonPlayCard.addActionListener(new ActionListener() {
+        mButtonPlayCard = new JButton("선택한 카드 내기");
+        mButtonPlayCard.setEnabled(false);
+        mButtonPlayCard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int selectedIndex = listCard.getSelectedIndex();
+                int selectedIndex = mListCard.getSelectedIndex();
                 if (selectedIndex < 0) {
                     JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하세요.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
 
@@ -288,18 +456,19 @@ public class PanelInGame extends JPanel implements IUpdatable {
                 mDummyCards.add(selectedCard);
                 Collections.shuffle(mDummyCards);
 
-                buttonPlayCard.setEnabled(false);
+                mButtonPlayCard.setEnabled(false);
 
-                listCard.setSelectedIndex(-1);
-                listCard.setEnabled(false);
+                mListCard.setSelectedIndex(-1);
+                mListCard.setEnabled(false);
             }
         });
-        panelCardList.add(buttonPlayCard);
+        panelCardList.add(mButtonPlayCard);
 
         mListCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
         mListCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         mListCake.setVisibleRowCount(-1);
         mListCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        mListCake.setEnabled(false);
 
         JScrollPane listCakeScroller = new JScrollPane();
         listCakeScroller.setViewportView(mListCake);
@@ -356,7 +525,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
         gbc.gridx = 0;
         gbc.gridwidth = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        var buttonApply = new JButton(mTurnCount + "라운드 시작");
+        var buttonApply = new JButton(String.format("%d %s", (mTurnCount) / 4 + 1, "라운드 시작"));
         buttonApply.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -371,16 +540,12 @@ public class PanelInGame extends JPanel implements IUpdatable {
                     return;
                 }
 
+                mMyPlayer.setCakeSelectingFinished(true);
+
                 for (int i = 0; i < size; ++i) {
                     int count = (Integer) spinners[i].getValue();
                     for (int c = 0; c < count; ++c) {
                         mMyPlayer.takeCake(layers[i]);
-                    }
-                }
-
-                for (var player : mPlayers) {
-                    for (int i = 0; i < 4; ++i) {
-                        player.takeCardFromDummy(mDummyCards);
                     }
                 }
 

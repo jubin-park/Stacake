@@ -8,19 +8,20 @@ public class Player {
     protected Marker mMarker;
     protected PlayerColorType mColorType;
     protected PlayerPositionType mPositionType;
+    protected boolean mbCakeSelectingFinished;
 
     protected ArrayList<Cake> mRemainCakes = new ArrayList<Cake>();
     protected ArrayList<Cake> mUsableCakes = new ArrayList<Cake>();
     protected ArrayList<CardType> mCards = new ArrayList<CardType>();
 
-    public Player(final String id) {
+    protected Player(final String id) {
         mId = id;
     }
 
     public int getCakeCount(final CakeLayerType cakeLayerType) {
         int count = 0;
         for (var cake : mRemainCakes) {
-            if (cake.getLayer() == cakeLayerType) {
+            if (cake.getLayerType() == cakeLayerType) {
                 ++count;
             }
         }
@@ -31,7 +32,7 @@ public class Player {
         final int size = mRemainCakes.size();
         for (int i = 0; i < size; ++i) {
             var cake = mRemainCakes.get(i);
-            if (cake.getLayer() == cakeLayerType) {
+            if (cake.getLayerType() == cakeLayerType) {
                 mRemainCakes.remove(i);
                 mUsableCakes.add(cake);
 
@@ -101,6 +102,14 @@ public class Player {
 
     public PlayerPositionType getPosition() {
         return mPositionType;
+    }
+
+    public boolean isCakeSelectingFinished() {
+        return mbCakeSelectingFinished;
+    }
+
+    public void setCakeSelectingFinished(final boolean value) {
+        mbCakeSelectingFinished = value;
     }
 
     public void setColor(final PlayerColorType colorType) {

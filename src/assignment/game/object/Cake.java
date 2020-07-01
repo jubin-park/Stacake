@@ -4,12 +4,12 @@ public final class Cake {
     private final CakeLayerType mLayerType;
     private final PlayerPositionType mPlayerPositionType;
 
-    public Cake(final CakeLayerType mLayer, final PlayerPositionType playerPositionType) {
-        mLayerType = mLayer;
+    public Cake(final CakeLayerType layerType, final PlayerPositionType playerPositionType) {
+        mLayerType = layerType;
         mPlayerPositionType = playerPositionType;
     }
 
-    public CakeLayerType getLayer() {
+    public CakeLayerType getLayerType() {
         return mLayerType;
     }
 

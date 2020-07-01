@@ -29,7 +29,8 @@ public final class MyPlayer extends Player {
         final int size = mRemainCakes.size();
         for (int i = 0; i < size; ++i) {
             var cake = mRemainCakes.get(i);
-            if (cake.getLayer() == cakeLayerType) {
+
+            if (cake.getLayerType() == cakeLayerType) {
                 mRemainCakes.remove(i);
                 mUsableCakes.add(cake);
                 BufferedImage subImage = ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * (cakeLayerType.getValue() - 1), 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT);

@@ -72,6 +72,10 @@ public final class City {
         return mSpots;
     }
 
+    public Spot getSpotByCake(final CardType card, final PlayerPositionType playerPositionType) {
+        return mSpots.get(INDICES_2D_MAP[playerPositionType.getIndex()][card.getIndex()]);
+    }
+
     public JLayeredPane getLayeredPane() {
         return mLayeredPane;
     }
