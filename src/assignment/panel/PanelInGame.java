@@ -143,14 +143,19 @@ public class PanelInGame extends JPanel implements IUpdatable {
                             return;
                         }
 
-                        int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(),
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.QUESTION_MESSAGE);
+                        var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
+
+                        if (!spot.isStackable(cake)) {
+                            JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+
+                            return;
+                        }
+
+                        int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                         if (result != JOptionPane.YES_OPTION) {
                             return;
                         }
 
-                        var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
                         mMyPlayer.useCake(cake);
 
                         //mListCake.setEnabled(false);

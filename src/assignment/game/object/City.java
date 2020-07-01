@@ -55,7 +55,7 @@ public final class City {
 
             spot.getLabelTarget().setBounds(x, y, Config.TARGET_IMAGE_WIDTH, Config.TARGET_IMAGE_HEIGHT);
 
-            spot.addTo(mLayeredPane);
+            spot.addToJLayeredPane(mLayeredPane);
         }
     }
 

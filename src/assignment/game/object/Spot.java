@@ -4,7 +4,6 @@ import assignment.Config;
 import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -47,9 +46,8 @@ public final class Spot {
     }
 
     public void updateSpotColor(final Player player) {
-        //mLabelSpot.setIcon(ResourceManager.getInstance().getImageIconDefaultSpot());
-        int x = player.getPosition().getIndex() * Config.SPOT_IMAGE_WIDTH;
-        int y = player.getColor().getIndex() * Config.SPOT_IMAGE_HEIGHT;
+        int x = player.getPosition().getIndex()  * Config.SPOT_IMAGE_WIDTH;
+        int y = (player.getColor().getIndex() + 1) * Config.SPOT_IMAGE_HEIGHT;
         var subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
         mLabelSpot.setIcon(new ImageIcon(subImage));
     }
@@ -81,11 +79,32 @@ public final class Spot {
         return count;
     }
 
-    public void addTo(final JLayeredPane layeredPane) {
-        layeredPane.add(mLabelSpot);
-        for (int i = 0; i < mLabelTotalLayers.length; ++i) {
-            layeredPane.add(mLabelTotalLayers[i]);
+    public boolean isStackable(final Cake targetCake) {
+        int targetLayerCount = 0;
+        int maxLayerCount = 0;
+
+        for (var position : PlayerPositionType.values()) {
+            int count = getCakeLayerCount(position);
+
+            if (position == targetCake.getPlayerPosition()) {
+                targetLayerCount = count;
+
+                continue;
+            }
+
+            if (maxLayerCount < count) {
+                maxLayerCount = count;
+            }
         }
+
+        return targetLayerCount + targetCake.getLayer().getValue() >= maxLayerCount;
+    }
+
+    public void addToJLayeredPane(final JLayeredPane layeredPane) {
         layeredPane.add(mLabelTarget);
+        for (var label : mLabelTotalLayers) {
+            layeredPane.add(label);
+        }
+        layeredPane.add(mLabelSpot);
     }
 }
