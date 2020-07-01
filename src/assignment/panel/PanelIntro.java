@@ -10,15 +10,17 @@ import java.awt.event.ActionListener;
 // https://stackoverflow.com/questions/42964669/placing-button-panel-in-center-java-swing
 
 public class PanelIntro extends JPanel implements IUpdatable {
-    private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
-
     public PanelIntro()
     {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         setLayout(new GridBagLayout());
 
+        JPanel panelButtonList = new JPanel(new GridLayout(6, 1));
+        var gbc = new GridBagConstraints();
+
         // title
-        addOnPanel(this, new JLabel("<html><h1><strong><i>Manhattan Game</i></strong></h1><hr></html>"), 1, 0, 1, 1);
+        var labelTitle = new JLabel("<html><h1><strong><i>Manhattan Game</i></strong></h1><hr></html>");
+        panelButtonList.add(labelTitle);
 
         // buttons
         var buttonSinglePlay = new JButton("Single Play");
@@ -30,6 +32,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
                 panelManager.showPanel(PanelType.INGAME);
             }
         });
+        panelButtonList.add(buttonSinglePlay);
 
         var buttonCreateNetPlay = new JButton("Create NetPlay");
         buttonCreateNetPlay.addActionListener(new ActionListener() {
@@ -38,6 +41,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
 
             }
         });
+        panelButtonList.add(buttonCreateNetPlay);
 
         var buttonJoinNetPlay = new JButton("Join NetPlay");
         buttonJoinNetPlay.addActionListener(new ActionListener() {
@@ -46,6 +50,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
 
             }
         });
+        panelButtonList.add(buttonJoinNetPlay);
 
         var buttonConfig = new JButton("Configuration");
         buttonConfig.addActionListener(new ActionListener() {
@@ -56,6 +61,7 @@ public class PanelIntro extends JPanel implements IUpdatable {
                 panelManager.showPanel(PanelType.CONFIG);
             }
         });
+        panelButtonList.add(buttonConfig);
 
         var buttonExit = new JButton("Shutdown");
         buttonExit.addActionListener(new ActionListener() {
@@ -68,28 +74,11 @@ public class PanelIntro extends JPanel implements IUpdatable {
                 ((JFrame) frame).dispose();
             }
         });
+        panelButtonList.add(buttonExit);
 
-        JPanel panelButtons = new JPanel(new GridBagLayout());
-        mGridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        addOnPanel(panelButtons, buttonSinglePlay, 0, 0, 1, 1);
-        addOnPanel(panelButtons, buttonCreateNetPlay, 0, 1, 1, 1);
-        addOnPanel(panelButtons, buttonJoinNetPlay, 0, 2, 1, 1);
-        addOnPanel(panelButtons, buttonConfig, 0, 3, 1, 1);
-        addOnPanel(panelButtons, buttonExit, 0, 4, 1, 1);
-        addOnPanel(this, panelButtons, 1, 1, 1, 1);
-
-        //panelButtons.setBackground(Color.GRAY);
-
-        setVisible(true);
+        add(panelButtonList);
     }
 
-    private void addOnPanel(final JPanel panel, final JComponent component, final int gridX, final int gridY, final int gridWidth, final int gridHeight) {
-        mGridBagConstraints.gridx = gridX;
-        mGridBagConstraints.gridy = gridY;
-        mGridBagConstraints.gridwidth = gridWidth;
-        mGridBagConstraints.gridheight = gridHeight;
-        panel.add(component, mGridBagConstraints);
-    }
 
     @Override
     public void updateComponents() {
