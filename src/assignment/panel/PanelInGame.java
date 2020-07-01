@@ -179,7 +179,7 @@ public class PanelInGame extends JPanel implements IUpdatable {
 
                     @Override
                     public void mouseEntered(MouseEvent e) {
-                        FrameMain.getInstance().setCursor(Cursor.HAND_CURSOR);
+                        FrameMain.getInstance().setCursor(new Cursor(Cursor.HAND_CURSOR));
                     }
 
                     @Override

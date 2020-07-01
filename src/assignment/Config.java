@@ -13,7 +13,7 @@ public final class Config {
      */
     public static final int FRAME_WIDTH = 900;
     public static final int FRAME_HEIGHT = 732;
-    public static final String FRAME_TITLE = "STACaKe";
+    public static final String FRAME_TITLE = "Stacake";
 
     public static final int CAKE_IMAGE_WIDTH = 32;
     public static final int CAKE_IMAGE_HEIGHT = 96;
