@@ -1,11 +1,8 @@
 package assignment.frame;
 
 import assignment.Config;
-import assignment.Program;
 import assignment.panel.PanelIntro;
 import assignment.panel.PanelManager;
-import assignment.panel.PanelType;
-
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -16,6 +13,11 @@ public final class FrameMain extends JFrame {
 
     public FrameMain(final int width, final int height) {
         super(Config.FRAME_TITLE);
+
+        if (sInstance == null) {
+            sInstance = this;
+        }
+
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
@@ -31,13 +33,7 @@ public final class FrameMain extends JFrame {
         setSize(width, height);
         setLocationRelativeTo(null); // center
 
-        if (sInstance == null) {
-            sInstance = this;
-        }
-
-        var panelManager = PanelManager.getInstance();
-        panelManager.addPanel(PanelType.INTRO, new PanelIntro());
-        panelManager.showPanel(PanelType.INTRO);
+        PanelManager.getInstance().gotoPanel(new PanelIntro());
     }
 
     public static FrameMain getInstance() {

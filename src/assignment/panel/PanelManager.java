@@ -2,6 +2,7 @@ package assignment.panel;
 
 import assignment.frame.FrameMain;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.*;
 
@@ -9,8 +10,7 @@ public final class PanelManager {
     private static PanelManager sInstance;
 
     private CardLayout mCardLayout = new CardLayout();
-    private HashMap<PanelType, JPanel> mPanels = new HashMap<PanelType, JPanel>();
-    private PanelType mCurrentPanelType;
+    private ArrayList<JPanel> mPanels = new ArrayList<JPanel>();
 
     private PanelManager() {
         FrameMain.getInstance().setLayout(mCardLayout);
@@ -20,27 +20,29 @@ public final class PanelManager {
         if (sInstance == null) {
             sInstance = new PanelManager();
         }
+
         return sInstance;
     }
 
-    public PanelType getCurrentPanelType() {
-        return mCurrentPanelType;
-    }
-
     public JPanel getCurrentPanel() {
-        return mPanels.get(mCurrentPanelType);
+        assert (mPanels.size() > 0);
+
+        return mPanels.get(mPanels.size() - 1);
     }
 
-    public void showPanel(final PanelType panelType) {
-        assert (panelType != null) : "panelType cannot be null";
-        assert (mPanels.containsKey(panelType)) : "panelType does not exist";
-        mCurrentPanelType = panelType;
-        mCardLayout.show(FrameMain.getInstance().getContentPane(), panelType.toString());
-        ((IUpdatable) getCurrentPanel()).updateComponents();
+    public void gotoPanel(final JPanel panel) {
+        var frameMain = FrameMain.getInstance();
+        frameMain.add(panel.toString(), panel);
+        mCardLayout.show(frameMain.getContentPane(), panel.toString());
+        mPanels.add(panel);
     }
 
-    public void addPanel(PanelType panelType, JPanel panel) {
-        mPanels.put(panelType, panel);
-        FrameMain.getInstance().add(panelType.toString(), panel);
+    public void popPanel() {
+        //FrameMain.getInstance().add(getCurrentPanel().toString(), null);
+        mPanels.remove(mPanels.size() - 1);
+    }
+
+    public CardLayout getCardLayout() {
+        return mCardLayout;
     }
 }

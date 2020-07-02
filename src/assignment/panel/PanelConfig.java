@@ -13,8 +13,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public final class PanelConfig extends JPanel implements IUpdatable {
-    private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
+public final class PanelConfig extends JPanel {
     private JTextField mTextFieldId = new JTextField(10);
     private JLabel mLabelLimitSecondsPerTurn = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
     private JSlider mSliderLimitSecondsPerTurn = new JSlider(10, 30, 30);
@@ -22,27 +21,49 @@ public final class PanelConfig extends JPanel implements IUpdatable {
     private JSlider mSliderSoundEffectVolume = new JSlider(0, 100, 100);
     
     public PanelConfig() {
-        // TODO 이미지 버튼으로 구성
-
         setLayout(new GridBagLayout());
 
         JPanel panelNested = new JPanel(new GridBagLayout());
-        addOnPanel(this, panelNested, 0, 0, 2, 1);
         panelNested.setPreferredSize(new Dimension(350, 150));
         panelNested.setBackground(Color.WHITE);
 
-        mGridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        var gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.gridheight = 1;
+        add(panelNested, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // labels
         var label00 = new JLabel("아이디");
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(label00, gbc);
+
         var label01 = new JLabel("한 턴당 제한 시간");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(label01, gbc);
+
         var label02 = new JLabel("효과음 볼륨");
-        addOnPanel(panelNested, label00, 0, 0, 1, 1);
-        addOnPanel(panelNested, label01, 0, 1, 1, 1);
-        addOnPanel(panelNested, label02, 0, 3, 1, 1);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(label00, gbc);
 
         // userId
-        addOnPanel(panelNested, mTextFieldId, 1, 0, 1, 1);
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(mTextFieldId, gbc);
 
         // LimitSecondsPerTurn
         mSliderLimitSecondsPerTurn.addChangeListener(new ChangeListener() {
@@ -52,8 +73,17 @@ public final class PanelConfig extends JPanel implements IUpdatable {
                 mLabelLimitSecondsPerTurn.setText(Byte.toString(value) + " 초");
             }
         });
-        addOnPanel(panelNested, mSliderLimitSecondsPerTurn, 1, 1, 1, 1);
-        addOnPanel(panelNested, mLabelLimitSecondsPerTurn, 1, 2, 1, 1);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(mSliderLimitSecondsPerTurn, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(mLabelLimitSecondsPerTurn, gbc);
 
         // SliderSoundEffectVolume
         mSliderSoundEffectVolume.addChangeListener(new ChangeListener() {
@@ -63,15 +93,31 @@ public final class PanelConfig extends JPanel implements IUpdatable {
                 mLabelSoundEffectVolume.setText(Byte.toString(value) + "%");
             }
         });
-        addOnPanel(panelNested, mSliderSoundEffectVolume, 1, 3, 1, 1);
-        addOnPanel(panelNested, mLabelSoundEffectVolume, 1, 4, 1, 1);
+
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(mSliderSoundEffectVolume, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested.add(mLabelSoundEffectVolume, gbc);
+
+
 
         JPanel panelNested2 = new JPanel(new GridBagLayout());
-        addOnPanel(this, panelNested2, 0, 1, 2, 1);
         panelNested2.setPreferredSize(new Dimension(350, 48));
         panelNested2.setBackground(Color.darkGray);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.gridheight = 1;
+        add(panelNested2, gbc);
 
-        mGridBagConstraints.fill = GridBagConstraints.BOTH;
+        gbc.fill = GridBagConstraints.BOTH;
 
         var buttonApply = new JButton("적용");
         buttonApply.addActionListener(new ActionListener() {
@@ -79,7 +125,9 @@ public final class PanelConfig extends JPanel implements IUpdatable {
             public void actionPerformed(ActionEvent e) {
                 String text = mTextFieldId.getText();
                 if (text.length() > 0) {
-                    PanelManager.getInstance().showPanel(PanelType.INTRO);
+                    var panelManager = PanelManager.getInstance();
+                    panelManager.popPanel();
+                    panelManager.gotoPanel(panelManager.getCurrentPanel());
                     Config.setUserId(text);
                     Config.setLimitSecondsPerTurn((byte) mSliderLimitSecondsPerTurn.getValue());
                     Config.setSoundEffectVolume((byte) mSliderSoundEffectVolume.getValue());
@@ -95,14 +143,28 @@ public final class PanelConfig extends JPanel implements IUpdatable {
         buttonCancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                PanelManager.getInstance().showPanel(PanelType.INTRO);
+                var panelManager = PanelManager.getInstance();
+                panelManager.popPanel();
+                panelManager.gotoPanel(panelManager.getCurrentPanel());
             }
         });
 
-        mGridBagConstraints.weightx = 1;
-        mGridBagConstraints.weighty = 1;
-        addOnPanel(panelNested2, buttonApply, 0, 0, 1, 1);
-        addOnPanel(panelNested2, buttonCancel, 1, 0, 1, 1);
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested2.add(buttonApply, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        panelNested2.add(buttonCancel, gbc);
+
+        update();
     }
 
     @Override
@@ -111,8 +173,7 @@ public final class PanelConfig extends JPanel implements IUpdatable {
         g.drawImage(ResourceManager.getInstance().getImageBackground(), 0, 0, null);
     }
 
-    @Override
-    public void updateComponents() {
+    private void update() {
         mTextFieldId.setText(Config.getUserId());
         mLabelLimitSecondsPerTurn.setText(Byte.toString(Config.getLimitSecondsPerTurn()) + " 초");
         mSliderLimitSecondsPerTurn.setValue(Config.getLimitSecondsPerTurn());
@@ -120,11 +181,8 @@ public final class PanelConfig extends JPanel implements IUpdatable {
         mSliderSoundEffectVolume.setValue(Config.getSoundEffectVolume());
     }
 
-    private void addOnPanel(JPanel panel, JComponent component, int gridX, int gridY, int gridWidth, int gridHeight) {
-        mGridBagConstraints.gridx = gridX;
-        mGridBagConstraints.gridy = gridY;
-        mGridBagConstraints.gridwidth = gridWidth;
-        mGridBagConstraints.gridheight = gridHeight;
-        panel.add(component, mGridBagConstraints);
+    @Override
+    public String toString() {
+        return "PanelConfig";
     }
 }

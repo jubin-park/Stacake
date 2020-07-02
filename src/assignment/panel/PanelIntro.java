@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public final class PanelIntro extends JPanel implements IUpdatable {
+public final class PanelIntro extends JPanel {
     public PanelIntro()
     {
         setBorder(new EmptyBorder(10, 10, 10, 10));
@@ -28,8 +28,7 @@ public final class PanelIntro extends JPanel implements IUpdatable {
             public void actionPerformed(final ActionEvent e) {
                 var panelManager = PanelManager.getInstance();
                 var panelInGame = new PanelInGame(new String[] {});
-                panelManager.addPanel(PanelType.INGAME, panelInGame);
-                panelManager.showPanel(PanelType.INGAME);
+                panelManager.gotoPanel(panelInGame);
                 panelInGame.start();
             }
         });
@@ -58,8 +57,7 @@ public final class PanelIntro extends JPanel implements IUpdatable {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 var panelManager = PanelManager.getInstance();
-                panelManager.addPanel(PanelType.CONFIG, new PanelConfig());
-                panelManager.showPanel(PanelType.CONFIG);
+                panelManager.gotoPanel(new PanelConfig());
             }
         });
         panelButtonList.add(buttonConfig);
@@ -87,7 +85,7 @@ public final class PanelIntro extends JPanel implements IUpdatable {
     }
 
     @Override
-    public void updateComponents() {
-
+    public String toString() {
+        return "PanelIntro";
     }
 }

@@ -30,7 +30,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
+public final class PanelInGame extends JPanel implements Runnable {
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
@@ -104,7 +104,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
             lastTime = now;
 
             if (delta >= 1.0) {
-                updateComponents();
+                update();
                 delta--;
             }
         }
@@ -120,8 +120,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         FrameMain.getInstance().setRunning(false);
     }
 
-    @Override
-    public synchronized void updateComponents() {
+    public synchronized void update() {
         switch (mGameFlow) {
             case GAME_START:
                 System.out.println("환영합니다.");
@@ -756,5 +755,10 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         public void update() {
 
         }
+    }
+
+    @Override
+    public String toString() {
+        return "PanelInGame";
     }
 }
