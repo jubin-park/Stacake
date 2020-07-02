@@ -69,7 +69,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         gbc.gridy = 0;
         gbc.weightx = 0.4;
         gbc.weighty = 0.7;
-        panelGridBag.add(new PanelGameLog(), gbc);
+        panelGridBag.add(new PanelLog(), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -382,10 +382,10 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         }
     }
 
-    private class PanelGameLog extends JPanel {
+    private class PanelLog extends JPanel {
         private JTextArea mTextAreaLog;
 
-        public PanelGameLog() {
+        public PanelLog() {
             setPreferredSize(new Dimension(200, getHeight()));
             //setBackground(Color.BLUE);
             //setOpaque(false);
