@@ -22,6 +22,7 @@ public final class PanelConfig extends JPanel {
     
     public PanelConfig() {
         setLayout(new GridBagLayout());
+        setBackground(Color.WHITE);
 
         JPanel panelNested = new JPanel(new GridBagLayout());
         panelNested.setPreferredSize(new Dimension(350, 150));

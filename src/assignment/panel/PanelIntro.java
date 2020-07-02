@@ -10,8 +10,9 @@ import java.awt.event.ActionListener;
 public final class PanelIntro extends JPanel {
     public PanelIntro()
     {
-        setBorder(new EmptyBorder(10, 10, 10, 10));
         setLayout(new GridBagLayout());
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+        setBackground(Color.WHITE);
 
         JPanel panelButtonList = new JPanel(new GridLayout(6, 1));
 
