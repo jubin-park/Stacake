@@ -1,5 +1,6 @@
 package assignment.panel;
 
+import assignment.utility.ResourceManager;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -13,10 +14,11 @@ public final class PanelIntro extends JPanel implements IUpdatable {
         setLayout(new GridBagLayout());
 
         JPanel panelButtonList = new JPanel(new GridLayout(6, 1));
-        var gbc = new GridBagConstraints();
 
         // title
         var labelTitle = new JLabel("<html><h1><strong><i>- Stacake -</i></strong></h1><p>Stack pieces of cake<hr></html>");
+        labelTitle.setOpaque(true);
+        labelTitle.setBackground(Color.WHITE);
         panelButtonList.add(labelTitle);
 
         // buttons
@@ -78,6 +80,11 @@ public final class PanelIntro extends JPanel implements IUpdatable {
         add(panelButtonList);
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(ResourceManager.getInstance().getImageBackground(), 0, 0, null);
+    }
 
     @Override
     public void updateComponents() {

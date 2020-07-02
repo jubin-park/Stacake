@@ -8,6 +8,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 public final class ResourceManager {
+    public static final String BACKGROUND_IMAGE_PATH = "resources/images/background.png";
+    public static final String BACKGROUND2_IMAGE_PATH = "resources/images/background-2.png";
     public static final String CAKES_IMAGE_PATH = "resources/images/cakes.png";
     public static final String CARDS_IMAGE_PATH = "resources/images/cards.png";
     public static final String SPOTS_IMAGE_PATH = "resources/images/spots.png";
@@ -16,6 +18,8 @@ public final class ResourceManager {
 
     private static ResourceManager mInstance;
 
+    private BufferedImage mImageBackground;
+    private BufferedImage mImageBackground2;
     private BufferedImage mImageSetCake;
     private BufferedImage mImageSetCard;
     private BufferedImage mImageSetSpot;
@@ -25,6 +29,8 @@ public final class ResourceManager {
 
     private ResourceManager() {
         try {
+            mImageBackground = ImageIO.read(Program.class.getResourceAsStream(BACKGROUND_IMAGE_PATH));
+            mImageBackground2 = ImageIO.read(Program.class.getResourceAsStream(BACKGROUND2_IMAGE_PATH));
             mImageSetCake = ImageIO.read(Program.class.getResourceAsStream(CAKES_IMAGE_PATH));
             mImageSetCard = ImageIO.read(Program.class.getResourceAsStream(CARDS_IMAGE_PATH));
             mImageSetSpot = ImageIO.read(Program.class.getResourceAsStream(SPOTS_IMAGE_PATH));
@@ -42,6 +48,14 @@ public final class ResourceManager {
         }
 
         return mInstance;
+    }
+
+    public BufferedImage getImageBackground() {
+        return mImageBackground;
+    }
+
+    public BufferedImage getImageBackground2() {
+        return mImageBackground2;
     }
 
     public BufferedImage getImageSetCake() {

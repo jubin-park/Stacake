@@ -1,6 +1,7 @@
 package assignment.panel;
 
 import assignment.Config;
+import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import assignment.frame.FrameMain;
 
@@ -28,7 +29,7 @@ public final class PanelConfig extends JPanel implements IUpdatable {
         JPanel panelNested = new JPanel(new GridBagLayout());
         addOnPanel(this, panelNested, 0, 0, 2, 1);
         panelNested.setPreferredSize(new Dimension(350, 150));
-        panelNested.setBackground(Color.GRAY);
+        panelNested.setBackground(Color.WHITE);
 
         mGridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 
@@ -105,6 +106,12 @@ public final class PanelConfig extends JPanel implements IUpdatable {
     }
 
     @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(ResourceManager.getInstance().getImageBackground(), 0, 0, null);
+    }
+
+    @Override
     public void updateComponents() {
         mTextFieldId.setText(Config.getUserId());
         mLabelLimitSecondsPerTurn.setText(Byte.toString(Config.getLimitSecondsPerTurn()) + " 초");
@@ -112,7 +119,6 @@ public final class PanelConfig extends JPanel implements IUpdatable {
         mLabelSoundEffectVolume.setText(Byte.toString(Config.getSoundEffectVolume()) + " %");
         mSliderSoundEffectVolume.setValue(Config.getSoundEffectVolume());
     }
-
 
     private void addOnPanel(JPanel panel, JComponent component, int gridX, int gridY, int gridWidth, int gridHeight) {
         mGridBagConstraints.gridx = gridX;
