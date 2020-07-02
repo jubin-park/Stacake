@@ -11,9 +11,11 @@ public final class Config {
     /*
      *  Game Configuration
      */
-    public static final int FRAME_WIDTH = 900;
-    public static final int FRAME_HEIGHT = 732;
+    public static final int FRAME_WIDTH = 912;
+    public static final int FRAME_HEIGHT = 740;
     public static final String FRAME_TITLE = "Stacake";
+
+    public static final int HUD_HEIGHT = 214;
 
     public static final int CAKE_IMAGE_WIDTH = 32;
     public static final int CAKE_IMAGE_HEIGHT = 96;

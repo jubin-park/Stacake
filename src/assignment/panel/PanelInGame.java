@@ -49,7 +49,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         initializeDummyCards();
 
         setLayout(new BorderLayout());
-        setBorder(new EmptyBorder(10, 10, 10, 10));
+        setBorder(new EmptyBorder(8, 8, 8, 8));
         setBackground(Color.DARK_GRAY);
 
         var panelGridBag = new JPanel(new GridBagLayout());
@@ -60,13 +60,13 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.weightx = 0.7;
+        gbc.weightx = 0.6;
         gbc.weighty = 0.7;
         panelGridBag.add(new PanelGameBoard(), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
-        gbc.weightx = 0.3;
+        gbc.weightx = 0.4;
         gbc.weighty = 0.7;
         panelGridBag.add(new PanelGameLog(), gbc);
 
@@ -361,22 +361,22 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
             gbc.gridx = 1;
             gbc.gridy = 2;
-            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.anchor = GridBagConstraints.PAGE_START;
             add(mPlayers.get(0).getMarker().getLayeredPane(), gbc);
 
             gbc.gridx = 0;
             gbc.gridy = 1;
-            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.anchor = GridBagConstraints.LINE_END;
             add(mPlayers.get(1).getMarker().getLayeredPane(), gbc);
 
             gbc.gridx = 1;
             gbc.gridy = 0;
-            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.anchor = GridBagConstraints.PAGE_END;
             add(mPlayers.get(2).getMarker().getLayeredPane(), gbc);
 
             gbc.gridx = 2;
             gbc.gridy = 1;
-            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.anchor = GridBagConstraints.LINE_START;
             add(mPlayers.get(3).getMarker().getLayeredPane(), gbc);
         }
     }
@@ -384,6 +384,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
     private class PanelGameLog extends JPanel {
         public PanelGameLog() {
             setBackground(Color.BLUE);
+            setPreferredSize(new Dimension(200, getHeight()));
             //setOpaque(false);
         }
     }
@@ -395,9 +396,9 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         private PanelStatus mPanelStatus;
 
         public PanelHeadUpDisplay() {
-            setLayout(new GridLayout(1, 4));
+            setLayout(new GridBagLayout());
             setBackground(Color.PINK);
-            setPreferredSize(new Dimension(getWidth(), 200));
+            setPreferredSize(new Dimension(getWidth(), Config.HUD_HEIGHT));
             //setOpaque(false);
 
             // TODO
@@ -408,13 +409,15 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
             // 현재 턴의 플레이어 행동
 
             mPanelSelectUsableCake = new PanelSelectUsableCake();
-            mPanelCakeList = new PanelCakeList();
-            mPanelCardList = new PanelCardList();
-            mPanelStatus = new PanelStatus();
-
             add(mPanelSelectUsableCake);
+
+            mPanelCakeList = new PanelCakeList();
             add(mPanelCakeList);
+
+            mPanelCardList = new PanelCardList();
             add(mPanelCardList);
+
+            mPanelStatus = new PanelStatus();
             add(mPanelStatus);
         }
 
@@ -445,6 +448,8 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         public PanelSelectUsableCake() {
             setLayout(new GridBagLayout());
             setOpaque(false);
+            setPreferredSize(new Dimension(208, Config.HUD_HEIGHT));
+            setBorder(BorderFactory.createTitledBorder("케익 보충"));
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(2,2,2,2);
@@ -549,6 +554,9 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
         public PanelCakeList() {
             setOpaque(false);
+            setPreferredSize(new Dimension(240, Config.HUD_HEIGHT));
+            setBorder(BorderFactory.createTitledBorder("보유중인 케익"));
+            
             mListCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
             mListCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             mListCake.setVisibleRowCount(-1);
@@ -557,7 +565,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
             JScrollPane listCakeScroller = new JScrollPane();
             listCakeScroller.setViewportView(mListCake);
-            listCakeScroller.setPreferredSize(new Dimension(240, 108));
+            listCakeScroller.setPreferredSize(new Dimension(210, 108));
 
             add(listCakeScroller);
         }
@@ -581,8 +589,10 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         private JButton mButtonPlayCard;
 
         public PanelCardList() {
-            setLayout(new FlowLayout());
+            setLayout(new GridBagLayout());
             setOpaque(false);
+            setPreferredSize(new Dimension(280, Config.HUD_HEIGHT));
+            setBorder(BorderFactory.createTitledBorder("보유중인 카드"));
 
             mListCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
             mListCard.setEnabled(false);
@@ -605,11 +615,16 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
                 }
             });
 
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            gbc.fill = GridBagConstraints.BOTH;
+
             JScrollPane mListCardScroller = new JScrollPane();
             mListCardScroller.setViewportView(mListCard);
             mListCardScroller.setPreferredSize(new Dimension(300, 72));
 
-            add(mListCardScroller);
+            add(mListCardScroller, gbc);
 
             mButtonPlayCard = new JButton("선택한 카드 내기");
             mButtonPlayCard.setEnabled(false);
@@ -635,8 +650,8 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
                     mListCard.setEnabled(false);
                 }
             });
-            add(mButtonPlayCard);
-
+            gbc.gridy = 1;
+            add(mButtonPlayCard, gbc);
         }
 
         public JList<ImageIcon> getListCard() {
@@ -664,25 +679,39 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         private JLabel mLabelPlayerAction;
 
         public PanelStatus() {
-            setLayout(new GridLayout(4, 1));
+            setLayout(new GridLayout(4, 2));
+            setPreferredSize(new Dimension(150, Config.HUD_HEIGHT));
+            setOpaque(false);
+            setBorder(BorderFactory.createTitledBorder("상태"));
 
-            mLabelRound = new JLabel("1 라운드");
+            JLabel labelRound = new JLabel("라운드");
+            add(labelRound);
+            mLabelRound = new JLabel();
             add(mLabelRound);
 
-            mLabelNowPlayer = new JLabel("현재 차례");
-            add(mLabelNowPlayer);
-
-            mLabelStartPlayer = new JLabel("시작 플레이어");
+            JLabel labelStartPlayer = new JLabel("시작");
+            add(labelStartPlayer);
+            mLabelStartPlayer = new JLabel();
             add(mLabelStartPlayer);
 
-            mLabelPlayerAction = new JLabel("현재 턴의 플레이어 행동");
+            JLabel labelNowPlayer = new JLabel("현재 차례");
+            add(labelNowPlayer);
+            mLabelNowPlayer = new JLabel();
+            add(mLabelNowPlayer);
+
+            JLabel labelPlayerAction = new JLabel("행동");
+            add(labelPlayerAction);
+            mLabelPlayerAction = new JLabel();
             add(mLabelPlayerAction);
+
+            mLabelRound.setText("1");
+            mLabelStartPlayer.setText(mMyPlayer.getId());
+            mLabelNowPlayer.setText(mMyPlayer.getId());
+            mLabelPlayerAction.setText("공격");
         }
 
         public void update() {
 
         }
-
-
     }
 }

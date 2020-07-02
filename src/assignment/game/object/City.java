@@ -30,8 +30,8 @@ public final class City {
             var spot = new Spot();
             mSpots.add(spot);
 
-            int x = (i % Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_WIDTH;
-            int y = (i / Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_HEIGHT;
+            int x = 8 + (i % Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_WIDTH;
+            int y = 8 + (i / Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_HEIGHT;
 
             spot.getLabelSpot().setBounds(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
 

@@ -6,9 +6,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-// https://docs.oracle.com/javase/tutorial/uiswing/layout/card.html
-// https://stackoverflow.com/questions/42964669/placing-button-panel-in-center-java-swing
-
 public final class PanelIntro extends JPanel implements IUpdatable {
     public PanelIntro()
     {
