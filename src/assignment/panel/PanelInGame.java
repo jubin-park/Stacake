@@ -31,19 +31,20 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 public final class PanelInGame extends JPanel implements Runnable {
+    private String[] netPlayerIds;
+
+    private int mTurnCount;
+    private int mRoundCount;
+    private int mStartPlayerIndex;
+    private GameFlowType mGameFlow = GameFlowType.GAME_START;
+
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
 
-    private int mTurnCount;
-    private int mRoundCount;
-    private int mStartPlayerIndex;
-
-    private GameFlowType mGameFlow = GameFlowType.GAME_START;
-    private String[] netPlayerIds;
-
     private PanelHeadUpDisplay mPanelHUD;
+    private PanelLog mPanelLog;
 
     public PanelInGame(String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
@@ -69,7 +70,8 @@ public final class PanelInGame extends JPanel implements Runnable {
         gbc.gridy = 0;
         gbc.weightx = 0.4;
         gbc.weighty = 0.7;
-        panelGridBag.add(new PanelLog(), gbc);
+        mPanelLog = new PanelLog();
+        panelGridBag.add(mPanelLog, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -120,10 +122,15 @@ public final class PanelInGame extends JPanel implements Runnable {
         FrameMain.getInstance().setRunning(false);
     }
 
-    public synchronized void update() {
+    private synchronized void update() {
         switch (mGameFlow) {
             case GAME_START:
-                System.out.println("환영합니다.");
+                mPanelLog.println("환영합니다.");
+                mGameFlow = GameFlowType.NEW_ROUND;
+                break;
+
+            case NEW_ROUND:
+                mPanelLog.println(String.format("%d 라운드 시작합니다.", ++mRoundCount));
 
                 // 랜덤 카드 4장씩 분배
                 for (var player : mPlayers) {
@@ -131,6 +138,10 @@ public final class PanelInGame extends JPanel implements Runnable {
                         player.takeCardFromDummy(mDummyCards);
                     }
                 }
+
+                mPanelLog.println(String.format("각각 %d장의 카드를 받았습니다.", Config.ROUND_CARD_COUNT));
+                mPanelLog.println(String.format("각자 냉장고에서 케익 %d개를 꺼내세요.", Config.MAX_SELECTING_CAKE_COUNT));
+                mPanelHUD.mPanelCakeFridge.setEnabled(true);
 
                 mGameFlow = GameFlowType.CHOOSE_SIX_CAKES;
                 break;
@@ -159,11 +170,9 @@ public final class PanelInGame extends JPanel implements Runnable {
                     }
                 }
 
-                System.out.println(String.format("%d %s", mRoundCount, "라운드 시작"));
-
                 Random random = new Random(System.currentTimeMillis());
                 mStartPlayerIndex = random.nextInt(Config.MAX_PLAYER_SIZE);
-                System.out.println(String.format("%s(index=%d) %s", mPlayers.get(mStartPlayerIndex).getId(), mStartPlayerIndex, "님부터 시작합니다."));
+                mPanelLog.println(String.format("%s 님부터 시작합니다.", mPlayers.get(mStartPlayerIndex).getId()));
 
                 mGameFlow = GameFlowType.USE_CARD_AND_CAKE;
                 break;
@@ -196,18 +205,15 @@ public final class PanelInGame extends JPanel implements Runnable {
 
                 int index = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
                 var targetPlayer = mPlayers.get(index);
-                /*
+
                 if (targetPlayer == mMyPlayer) {
-                    mListCake.setEnabled(true);
-                    mListCard.setEnabled(true);
-                    mButtonPlayCard.setEnabled(true);
+
+                    
                     return;
-                } else {
-                    mListCake.setEnabled(false);
-                    mListCard.setEnabled(false);
-                    mButtonPlayCard.setEnabled(false);
                 }
-*/
+
+                mPanelLog.println(String.format("%s 님이 케익을 놓았습니다.", targetPlayer.getId()));
+                
                 var ai = (AIPlayer) targetPlayer;
                 var card = ai.useRandomCard();
                 mDummyCards.add(card);
@@ -437,7 +443,7 @@ public final class PanelInGame extends JPanel implements Runnable {
     }
 
     private class PanelHeadUpDisplay extends JPanel {
-        private PanelSelectUsableCake mPanelSelectUsableCake;
+        private PanelCakeFridge mPanelCakeFridge;
         private PanelCakeList mPanelCakeList;
         private PanelCardList mPanelCardList;
         private PanelStatus mPanelStatus;
@@ -452,8 +458,8 @@ public final class PanelInGame extends JPanel implements Runnable {
             gbc.weighty = 1.0;
             gbc.fill = GridBagConstraints.BOTH;
 
-            mPanelSelectUsableCake = new PanelSelectUsableCake();
-            add(mPanelSelectUsableCake, gbc);
+            mPanelCakeFridge = new PanelCakeFridge();
+            add(mPanelCakeFridge, gbc);
 
             mPanelCakeList = new PanelCakeList();
             add(mPanelCakeList, gbc);
@@ -463,10 +469,12 @@ public final class PanelInGame extends JPanel implements Runnable {
 
             mPanelStatus = new PanelStatus();
             add(mPanelStatus, gbc);
+
+            setEnabled(false);
         }
 
-        public PanelSelectUsableCake getPanelSelectUsableCake() {
-            return mPanelSelectUsableCake;
+        public PanelCakeFridge getPanelCakeFridge() {
+            return mPanelCakeFridge;
         }
 
         public PanelCakeList getPanelCakeList() {
@@ -485,11 +493,18 @@ public final class PanelInGame extends JPanel implements Runnable {
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
 
+            mPanelCakeFridge.setEnabled(enabled);
+            mPanelCakeList.setEnabled(enabled);
+            mPanelCardList.setEnabled(enabled);
         }
     }
 
-    private class PanelSelectUsableCake extends JPanel {
-        public PanelSelectUsableCake() {
+    private class PanelCakeFridge extends JPanel {
+        private JLabel[] mLabelRemainCakeCounts = new JLabel[CakeLayerType.SIZE];
+        private JSpinner[] mSpinners = new JSpinner[CakeLayerType.SIZE];
+        private SpinnerNumberModel[] mSpinnerNumberModels = new SpinnerNumberModel[CakeLayerType.SIZE];
+
+        public PanelCakeFridge() {
             setLayout(new GridBagLayout());
             setOpaque(false);
             setPreferredSize(new Dimension(208, Config.HUD_HEIGHT));
@@ -498,12 +513,11 @@ public final class PanelInGame extends JPanel implements Runnable {
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(2,2,2,2);
 
-            final int size = CakeLayerType.values().length;
             final CakeLayerType[] layers = CakeLayerType.values();
 
             gbc.gridy = 0;
-            JLabel[] labelPreviewCakes = new JLabel[size];
-            for (int i = 0; i < size; ++i) {
+            JLabel[] labelPreviewCakes = new JLabel[CakeLayerType.SIZE];
+            for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                 gbc.gridx = i + 1;
                 labelPreviewCakes[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * i, 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT)));
                 add(labelPreviewCakes[i], gbc);
@@ -512,21 +526,25 @@ public final class PanelInGame extends JPanel implements Runnable {
             gbc.gridy = 1;
             gbc.gridx = 0;
             add(new JLabel("선택 개수"), gbc);
-            JSpinner[] spinners = new JSpinner[size];
-            for (int i = 0; i < size; ++i) {
+
+            for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                 gbc.gridx = i + 1;
-                spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1));
-                spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
-                add(spinners[i], gbc);
+                mSpinnerNumberModels[i] = new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1);
+                mSpinners[i] = new JSpinner(mSpinnerNumberModels[i]);
+                mSpinners[i].setEditor(new JSpinner.DefaultEditor(mSpinners[i]));
+                add(mSpinners[i], gbc);
             }
 
             gbc.gridy = 2;
             gbc.gridx = 0;
             add(new JLabel("잔여 개수"), gbc);
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                 gbc.gridx = i + 1;
-                add(new JLabel(String.format("%d", mMyPlayer.getCakeCount(layers[i]))), gbc);
+                mLabelRemainCakeCounts[i] = new JLabel();
+                add(mLabelRemainCakeCounts[i], gbc);
             }
+
+            update();
 
             gbc.gridy = 3;
             gbc.gridx = 0;
@@ -537,38 +555,34 @@ public final class PanelInGame extends JPanel implements Runnable {
             gbc.gridx = 0;
             gbc.gridwidth = 5;
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            var buttonApply = new JButton(String.format("%d %s", (mTurnCount) / 4 + 1, "라운드 시작"));
+            var buttonApply = new JButton("케익 꺼내기");
+
             buttonApply.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     int cakeCount = 0;
-                    for (int i = 0; i < size; ++i) {
-                        cakeCount += (Integer) spinners[i].getValue();
+                    for (int i = 0; i < CakeLayerType.SIZE; ++i) {
+                        cakeCount += (Integer) mSpinners[i].getValue();
                     }
 
                     if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
-                        JOptionPane.showMessageDialog(FrameMain.getInstance(), "케익은 반드시 6개를 선택해야 합니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(FrameMain.getInstance(), String.format("케익은 반드시 %d개를 선택해야 합니다.", Config.MAX_SELECTING_CAKE_COUNT), FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
 
                         return;
                     }
 
                     mMyPlayer.setCakeSelectingFinished(true);
 
-                    for (int i = 0; i < size; ++i) {
-                        int count = (Integer) spinners[i].getValue();
+                    for (int i = 0; i < CakeLayerType.SIZE; ++i) {
+                        int count = (Integer) mSpinners[i].getValue();
                         for (int c = 0; c < count; ++c) {
                             mMyPlayer.takeCake(layers[i]);
                         }
                     }
 
-                    /*
-                    mPanelSelectUsableCake.setEnabled(false);
-                    mPanelCardList.setEnabled(true);
+                    update();
+                    setEnabled(false);
 
-
-                    mPanelHUD.revalidate();
-                    mPanelHUD.repaint();
-                    */
                 }
             });
             add(buttonApply, gbc);
@@ -578,8 +592,18 @@ public final class PanelInGame extends JPanel implements Runnable {
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
 
-            for (var component : getComponents() ){
-                component.setEnabled(false);
+            for (var component : getComponents()) {
+                component.setEnabled(enabled);
+            }
+        }
+
+        private void update() {
+            final CakeLayerType[] layers = CakeLayerType.values();
+
+            for (int i = 0; i < CakeLayerType.SIZE; ++i) {
+                mLabelRemainCakeCounts[i].setText(String.format("%d", mMyPlayer.getCakeCount(layers[i])));
+                mSpinnerNumberModels[i] = new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1);
+                mSpinners[i].setValue(0);
             }
         }
     }
@@ -597,7 +621,6 @@ public final class PanelInGame extends JPanel implements Runnable {
             mListCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             mListCake.setVisibleRowCount(-1);
             mListCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-            mListCake.setEnabled(false);
 
             JScrollPane listCakeScroller = new JScrollPane();
             listCakeScroller.setViewportView(mListCake);
@@ -619,8 +642,8 @@ public final class PanelInGame extends JPanel implements Runnable {
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
 
-            for (var component : getComponents() ){
-                component.setEnabled(false);
+            for (var component : getComponents()) {
+                component.setEnabled(enabled);
             }
         }
     }
@@ -636,10 +659,10 @@ public final class PanelInGame extends JPanel implements Runnable {
             setBorder(BorderFactory.createTitledBorder("보유중인 카드"));
 
             mListCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
-            mListCard.setEnabled(false);
             mListCard.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             mListCard.setVisibleRowCount(-1);
             mListCard.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+
             mListCard.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(final ListSelectionEvent e) {
@@ -668,7 +691,6 @@ public final class PanelInGame extends JPanel implements Runnable {
             add(mListCardScroller, gbc);
 
             mButtonPlayCard = new JButton("선택한 카드 내기");
-            mButtonPlayCard.setEnabled(false);
             mButtonPlayCard.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -685,10 +707,7 @@ public final class PanelInGame extends JPanel implements Runnable {
                     mDummyCards.add(selectedCard);
                     Collections.shuffle(mDummyCards);
 
-                    mButtonPlayCard.setEnabled(false);
-
                     mListCard.setSelectedIndex(-1);
-                    mListCard.setEnabled(false);
                 }
             });
             gbc.gridy = 1;
@@ -708,8 +727,8 @@ public final class PanelInGame extends JPanel implements Runnable {
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
 
-            for (var component : getComponents() ){
-                component.setEnabled(false);
+            for (var component : getComponents())  {
+                component.setEnabled(enabled);
             }
         }
     }

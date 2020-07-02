@@ -6,6 +6,8 @@ public enum CakeLayerType {
     THREE(3),
     FOUR(4);
 
+    public static final int SIZE = values().length;
+
     private int mValue;
 
     CakeLayerType(final int value) {

@@ -15,6 +15,8 @@ public final class Config {
     public static final int FRAME_HEIGHT = 740;
     public static final String FRAME_TITLE = "Stacake";
 
+    public static final int ROUND_CARD_COUNT = 4;
+
     public static final int HUD_HEIGHT = 214;
 
     public static final int CAKE_IMAGE_WIDTH = 32;

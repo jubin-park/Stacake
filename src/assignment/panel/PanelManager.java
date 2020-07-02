@@ -38,7 +38,6 @@ public final class PanelManager {
     }
 
     public void popPanel() {
-        //FrameMain.getInstance().add(getCurrentPanel().toString(), null);
         mPanels.remove(mPanels.size() - 1);
     }
 
