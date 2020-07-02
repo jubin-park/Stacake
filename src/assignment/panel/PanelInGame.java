@@ -50,7 +50,35 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         initializeDummyCards();
 
         setLayout(new BorderLayout());
-        add(createPanelMain());
+        setBorder(new EmptyBorder(10, 10, 10, 10));
+        setBackground(Color.DARK_GRAY);
+
+        mPanelGridBag = new JPanel(new GridBagLayout());
+        mPanelGridBag.setOpaque(false);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 0.7;
+        gbc.weighty = 0.7;
+        mPanelGridBag.add(new PanelGameBoard(), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0.3;
+        gbc.weighty = 0.7;
+        mPanelGridBag.add(new PanelGameLog(), gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.3;
+        mPanelGridBag.add(new PanelHeadUpDisplay(), gbc);
+
+        add(mPanelGridBag);
     }
 
     @Override
@@ -248,41 +276,6 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
                 mDummyCards.add(card);
             }
         }
-    }
-
-    private JPanel createPanelMain() {
-        JPanel panelMain = new JPanel(new BorderLayout());
-        panelMain.setBorder(new EmptyBorder(10, 10, 10, 10));
-        panelMain.setBackground(Color.DARK_GRAY);
-
-        mPanelGridBag = new JPanel(new GridBagLayout());
-        mPanelGridBag.setOpaque(false);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.weightx = 0.7;
-        gbc.weighty = 0.7;
-        mPanelGridBag.add(new PanelGameBoard(), gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.weightx = 0.3;
-        gbc.weighty = 0.7;
-        mPanelGridBag.add(new PanelGameLog(), gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1.0;
-        gbc.weighty = 0.3;
-        mPanelGridBag.add(new PanelHeadUpDisplay(), gbc);
-
-        panelMain.add(mPanelGridBag);
-
-        return panelMain;
     }
 
     private class PanelGameBoard extends JPanel {
