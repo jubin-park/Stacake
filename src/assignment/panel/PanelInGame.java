@@ -15,6 +15,7 @@ import assignment.game.object.Player;
 import assignment.game.object.Spot;
 import assignment.utility.ResourceManager;
 import assignment.frame.FrameMain;
+import assignment.utility.StringUtility;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -382,10 +383,30 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
     }
 
     private class PanelGameLog extends JPanel {
+        private JTextArea mTextAreaLog;
+
         public PanelGameLog() {
-            setBackground(Color.BLUE);
             setPreferredSize(new Dimension(200, getHeight()));
+            //setBackground(Color.BLUE);
             //setOpaque(false);
+
+            mTextAreaLog = new JTextArea(28, 21);
+            mTextAreaLog.setLineWrap(true);
+            JScrollPane scroller = new JScrollPane(mTextAreaLog);
+            add(scroller);
+        }
+
+        public void print(String text) {
+            mTextAreaLog.append(text);
+        }
+
+        public void println(String text) {
+            mTextAreaLog.append(text);
+            mTextAreaLog.append(System.lineSeparator());
+        }
+
+        public void clear() {
+            mTextAreaLog.setText(StringUtility.EMPTY);
         }
     }
 
@@ -400,13 +421,6 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
             setBackground(Color.PINK);
             setPreferredSize(new Dimension(getWidth(), Config.HUD_HEIGHT));
             //setOpaque(false);
-
-            // TODO
-            // 소유 빌딩 카드
-            // 소유 빌딩 블록
-            // 이번 라운드의 시작 플레이어
-            // 현재 라운드 수
-            // 현재 턴의 플레이어 행동
 
             mPanelSelectUsableCake = new PanelSelectUsableCake();
             add(mPanelSelectUsableCake);
