@@ -42,7 +42,6 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
     private GameFlowType mGameFlow = GameFlowType.GAME_START;
     private String[] netPlayerIds;
 
-    private JPanel mPanelGridBag;
     private PanelHeadUpDisplay mPanelHUD;
 
     public PanelInGame(String[] netPlayerIds) {
@@ -53,8 +52,8 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         setBackground(Color.DARK_GRAY);
 
-        mPanelGridBag = new JPanel(new GridBagLayout());
-        mPanelGridBag.setOpaque(false);
+        var panelGridBag = new JPanel(new GridBagLayout());
+        panelGridBag.setOpaque(false);
 
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -63,22 +62,23 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         gbc.gridy = 0;
         gbc.weightx = 0.7;
         gbc.weighty = 0.7;
-        mPanelGridBag.add(new PanelGameBoard(), gbc);
+        panelGridBag.add(new PanelGameBoard(), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 0.3;
         gbc.weighty = 0.7;
-        mPanelGridBag.add(new PanelGameLog(), gbc);
+        panelGridBag.add(new PanelGameLog(), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
         gbc.weighty = 0.3;
-        mPanelGridBag.add(new PanelHeadUpDisplay(), gbc);
+        mPanelHUD = new PanelHeadUpDisplay();
+        panelGridBag.add(mPanelHUD, gbc);
 
-        add(mPanelGridBag);
+        add(panelGridBag);
     }
 
     @Override
@@ -285,7 +285,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
             JPanel panelMap = new JPanel(new GridLayout(2, 3));
             panelMap.setPreferredSize(new Dimension(480, 324));
-            panelMap.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+            //panelMap.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
             for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
                 var city = new City();
@@ -361,22 +361,22 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
             gbc.gridx = 1;
             gbc.gridy = 2;
-            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.anchor = GridBagConstraints.CENTER;
             add(mPlayers.get(0).getMarker().getLayeredPane(), gbc);
 
             gbc.gridx = 0;
             gbc.gridy = 1;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.anchor = GridBagConstraints.CENTER;
             add(mPlayers.get(1).getMarker().getLayeredPane(), gbc);
 
             gbc.gridx = 1;
             gbc.gridy = 0;
-            gbc.fill = GridBagConstraints.VERTICAL;
+            gbc.anchor = GridBagConstraints.CENTER;
             add(mPlayers.get(2).getMarker().getLayeredPane(), gbc);
 
             gbc.gridx = 2;
             gbc.gridy = 1;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.anchor = GridBagConstraints.CENTER;
             add(mPlayers.get(3).getMarker().getLayeredPane(), gbc);
         }
     }
