@@ -282,11 +282,10 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
     private class PanelGameBoard extends JPanel {
         public PanelGameBoard() {
             setLayout(new GridBagLayout());
-            setBackground(Color.ORANGE);
+            setBackground(Color.WHITE);
 
             JPanel panelMap = new JPanel(new GridLayout(2, 3));
             panelMap.setPreferredSize(new Dimension(480, 324));
-            //panelMap.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
             for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
                 var city = new City();
@@ -386,14 +385,17 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
         private JTextArea mTextAreaLog;
 
         public PanelLog() {
+            setLayout(new BorderLayout());
             setPreferredSize(new Dimension(200, getHeight()));
+            setBorder(BorderFactory.createTitledBorder("로그 메세지"));
             //setBackground(Color.BLUE);
             //setOpaque(false);
 
-            mTextAreaLog = new JTextArea(28, 21);
-            mTextAreaLog.setLineWrap(true);
+            mTextAreaLog = new JTextArea();
+            mTextAreaLog.setEditable(false);
+
             JScrollPane scroller = new JScrollPane(mTextAreaLog);
-            add(scroller);
+            add(scroller, BorderLayout.CENTER);
         }
 
         public void print(String text) {
@@ -418,8 +420,8 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
         public PanelHeadUpDisplay() {
             setLayout(new GridBagLayout());
-            setBackground(Color.PINK);
             setPreferredSize(new Dimension(getWidth(), Config.HUD_HEIGHT));
+            //setBackground(Color.PINK);
             //setOpaque(false);
 
             mPanelSelectUsableCake = new PanelSelectUsableCake();
