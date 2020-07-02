@@ -29,7 +29,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class PanelInGame extends JPanel implements Runnable, IUpdatable {
+public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
@@ -43,16 +43,13 @@ public class PanelInGame extends JPanel implements Runnable, IUpdatable {
     private String[] netPlayerIds;
 
     private JPanel mPanelGridBag;
-    private JPanel mPanelUI;
-    private JList<ImageIcon> mListCake;
-    private JList<ImageIcon> mListCard;
-    private JButton mButtonPlayCard = new JButton("선택한 카드 내기");
+    private PanelHeadUpDisplay mPanelHUD;
 
     public PanelInGame(String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
         initializeDummyCards();
 
-        setLayout(new GridLayout(1, 1));
+        setLayout(new BorderLayout());
         add(createPanelMain());
     }
 
@@ -141,22 +138,23 @@ public class PanelInGame extends JPanel implements Runnable, IUpdatable {
                 if (mTurnCount >= Config.MAX_PLAYER_SIZE) {
                     ++mRoundCount;
 
-                    if (mRoundCount >= Config.MAX_ROUND_COUNT) {
-                        mTurnCount = 0;
-                        mGameFlow = GameFlowType.GAME_OVER;
-
-                        mListCake.setEnabled(true);
-                        mListCard.setEnabled(true);
-                        mButtonPlayCard.setEnabled(true);
-
-                        return;
-                    }
-
                     mTurnCount = 0;
-
                     for (var player : mPlayers) {
                         player.setCakeSelectingFinished(false);
                     }
+
+                    /*
+                    mListCake.setEnabled(true);
+                    mListCard.setEnabled(true);
+                    mButtonPlayCard.setEnabled(true);
+
+                     */
+
+                    if (mRoundCount >= Config.MAX_ROUND_COUNT) {
+                        mGameFlow = GameFlowType.GAME_OVER;
+                        return;
+                    }
+
                     mGameFlow = GameFlowType.CHOOSE_SIX_CAKES;
 
                     return;
@@ -164,6 +162,7 @@ public class PanelInGame extends JPanel implements Runnable, IUpdatable {
 
                 int index = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
                 var targetPlayer = mPlayers.get(index);
+                /*
                 if (targetPlayer == mMyPlayer) {
                     mListCake.setEnabled(true);
                     mListCard.setEnabled(true);
@@ -174,7 +173,7 @@ public class PanelInGame extends JPanel implements Runnable, IUpdatable {
                     mListCard.setEnabled(false);
                     mButtonPlayCard.setEnabled(false);
                 }
-
+*/
                 var ai = (AIPlayer) targetPlayer;
                 var card = ai.useRandomCard();
                 mDummyCards.add(card);
@@ -264,304 +263,433 @@ public class PanelInGame extends JPanel implements Runnable, IUpdatable {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.gridx = 0;
         gbc.gridy = 0;
-        mPanelGridBag.add(createPanelBoard(), gbc);
+        gbc.weightx = 0.7;
+        gbc.weighty = 0.7;
+        mPanelGridBag.add(new PanelGameBoard(), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        mPanelGridBag.add(createPanelGameLog(), gbc);
+        gbc.weightx = 0.3;
+        gbc.weighty = 0.7;
+        mPanelGridBag.add(new PanelGameLog(), gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 2;
-        mPanelGridBag.add(createPanelUI(), gbc);
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.3;
+        mPanelGridBag.add(new PanelHeadUpDisplay(), gbc);
 
         panelMain.add(mPanelGridBag);
 
         return panelMain;
     }
 
-    private JPanel createPanelBoard() {
-        JPanel panelBoard = new JPanel(new GridBagLayout());
+    private class PanelGameBoard extends JPanel {
+        public PanelGameBoard() {
+            setLayout(new GridBagLayout());
+            setBackground(Color.ORANGE);
 
-        JPanel panelMap = new JPanel(new GridLayout(2, 3));
-        panelMap.setPreferredSize(new Dimension(480, 324));
-        panelMap.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+            JPanel panelMap = new JPanel(new GridLayout(2, 3));
+            panelMap.setPreferredSize(new Dimension(480, 324));
+            panelMap.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-        for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
-            var city = new City();
-            mCities.add(city);
-            panelMap.add(city.getLayeredPane());
+            for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
+                var city = new City();
+                mCities.add(city);
+                panelMap.add(city.getLayeredPane());
 
-            for (var spot : city.getSpots()) {
-                spot.getLabelTarget().addMouseListener(new MouseListener() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        int selectedIndex = mListCake.getSelectedIndex();
-                        if (selectedIndex < 0) {
-                            // TODO 카드 제출 후 사용 가능하도록
+                for (var spot : city.getSpots()) {
+                    spot.getLabelTarget().addMouseListener(new MouseListener() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            int selectedIndex = mPanelHUD.getPanelCakeList().getListCake().getSelectedIndex();
+                            if (selectedIndex < 0) {
+                                // TODO 카드 제출 후 사용 가능하도록
 
-                            return;
+                                return;
+                            }
+
+                            var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
+
+                            if (!spot.isStackable(cake)) {
+                                JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+
+                                return;
+                            }
+
+                            int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                            if (result != JOptionPane.YES_OPTION) {
+                                return;
+                            }
+
+                            mMyPlayer.useCake(cake);
+
+                            //mListCake.setEnabled(false);
+                            //mPanelHUD.getPanelCakeList().getListCake().setSelectedIndex(-1);
+
+                            spot.stackCake(cake);
+                            spot.updateLabels();
+                            spot.updateSpotColor(mMyPlayer);
+
+                            ++mTurnCount;
                         }
 
-                        var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
+                        @Override
+                        public void mousePressed(MouseEvent e) {
 
-                        if (!spot.isStackable(cake)) {
-                            JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
-
-                            return;
                         }
 
-                        int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                        if (result != JOptionPane.YES_OPTION) {
-                            return;
+                        @Override
+                        public void mouseReleased(MouseEvent e) {
+
                         }
 
-                        mMyPlayer.useCake(cake);
+                        @Override
+                        public void mouseEntered(MouseEvent e) {
+                            FrameMain.getInstance().setCursor(new Cursor(Cursor.HAND_CURSOR));
+                        }
 
-                        //mListCake.setEnabled(false);
-                        mListCake.setSelectedIndex(-1);
-
-                        spot.stackCake(cake);
-                        spot.updateLabels();
-                        spot.updateSpotColor(mMyPlayer);
-
-                        ++mTurnCount;
-                    }
-
-                    @Override
-                    public void mousePressed(MouseEvent e) {
-
-                    }
-
-                    @Override
-                    public void mouseReleased(MouseEvent e) {
-
-                    }
-
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        FrameMain.getInstance().setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    }
-
-                    @Override
-                    public void mouseExited(MouseEvent e) {
-                        FrameMain.getInstance().setCursor(Cursor.getDefaultCursor());
-                    }
-                });
-            }
-        }
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        panelBoard.add(panelMap, gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panelBoard.add(mPlayers.get(0).getMarker().getLayeredPane(), gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panelBoard.add(mPlayers.get(1).getMarker().getLayeredPane(), gbc);
-
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panelBoard.add(mPlayers.get(2).getMarker().getLayeredPane(), gbc);
-
-        gbc.gridx = 2;
-        gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panelBoard.add(mPlayers.get(3).getMarker().getLayeredPane(), gbc);
-
-        return panelBoard;
-    }
-
-    private JPanel createPanelGameLog() {
-        JPanel panelGameLog = new JPanel();
-        panelGameLog.setBackground(Color.GRAY);
-        return panelGameLog;
-    }
-
-    private JPanel createPanelUI() {
-        mPanelUI = new JPanel(new BorderLayout());
-        mPanelUI.setBackground(Color.white);
-        //mPanelUI.setMinimumSize(new Dimension(800, 300));
-
-        // TODO
-        // 소유 빌딩 카드
-        // 소유 빌딩 블록
-        // 이번 라운드의 시작 플레이어
-        // 현재 라운드 수
-        // 현재 턴의 플레이어 행동
-        
-        mPanelUI.add(createPanelSelectUsableCakes());
-
-        return mPanelUI;
-    }
-
-    private JPanel createPanelCardList() {
-        JPanel panelCardList = new JPanel(new FlowLayout());
-        panelCardList.setOpaque(false);
-
-        mListCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
-        mListCard.setEnabled(false);
-        mListCard.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        mListCard.setVisibleRowCount(-1);
-        mListCard.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        mListCard.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(final ListSelectionEvent e) {
-                int selectedIndex = mListCard.getSelectedIndex();
-                if (selectedIndex < 0) {
-
-                    return;
-                }
-
-                var card = mMyPlayer.getCards().get(selectedIndex);
-                for (var city : mCities) {
-                    city.updatePreview(card, mMyPlayer.getPosition());
+                        @Override
+                        public void mouseExited(MouseEvent e) {
+                            FrameMain.getInstance().setCursor(Cursor.getDefaultCursor());
+                        }
+                    });
                 }
             }
-        });
 
-        JScrollPane mListCardScroller = new JScrollPane();
-        mListCardScroller.setViewportView(mListCard);
-        mListCardScroller.setPreferredSize(new Dimension(300, 72));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
 
-        panelCardList.add(mListCardScroller);
+            gbc.gridx = 1;
+            gbc.gridy = 1;
+            add(panelMap, gbc);
 
-        mButtonPlayCard = new JButton("선택한 카드 내기");
-        mButtonPlayCard.setEnabled(false);
-        mButtonPlayCard.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectedIndex = mListCard.getSelectedIndex();
-                if (selectedIndex < 0) {
-                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하세요.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+            gbc.gridx = 1;
+            gbc.gridy = 2;
+            gbc.fill = GridBagConstraints.VERTICAL;
+            add(mPlayers.get(0).getMarker().getLayeredPane(), gbc);
 
-                    return;
-                }
+            gbc.gridx = 0;
+            gbc.gridy = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            add(mPlayers.get(1).getMarker().getLayeredPane(), gbc);
 
-                var selectedCard = mMyPlayer.getCards().get(selectedIndex);
+            gbc.gridx = 1;
+            gbc.gridy = 0;
+            gbc.fill = GridBagConstraints.VERTICAL;
+            add(mPlayers.get(2).getMarker().getLayeredPane(), gbc);
 
-                mMyPlayer.useCard(selectedCard);
-                mDummyCards.add(selectedCard);
-                Collections.shuffle(mDummyCards);
-
-                mButtonPlayCard.setEnabled(false);
-
-                mListCard.setSelectedIndex(-1);
-                mListCard.setEnabled(false);
-            }
-        });
-        panelCardList.add(mButtonPlayCard);
-
-        mListCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
-        mListCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        mListCake.setVisibleRowCount(-1);
-        mListCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        mListCake.setEnabled(false);
-
-        JScrollPane listCakeScroller = new JScrollPane();
-        listCakeScroller.setViewportView(mListCake);
-        listCakeScroller.setPreferredSize(new Dimension(240, 108));
-
-        panelCardList.add(listCakeScroller);
-
-        return panelCardList;
+            gbc.gridx = 2;
+            gbc.gridy = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            add(mPlayers.get(3).getMarker().getLayeredPane(), gbc);
+        }
     }
 
-    private JPanel createPanelSelectUsableCakes() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setOpaque(false);
+    private class PanelGameLog extends JPanel {
+        public PanelGameLog() {
+            setBackground(Color.BLUE);
+            //setOpaque(false);
+        }
+    }
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2,2,2,2);
+    private class PanelHeadUpDisplay extends JPanel {
+        private PanelSelectUsableCake mPanelSelectUsableCake;
+        private PanelCakeList mPanelCakeList;
+        private PanelCardList mPanelCardList;
+        private PanelStatus mPanelStatus;
 
-        final int size = CakeLayerType.values().length;
-        final CakeLayerType[] layers = CakeLayerType.values();
+        public PanelHeadUpDisplay() {
+            setLayout(new GridLayout(1, 4));
+            setBackground(Color.PINK);
+            setPreferredSize(new Dimension(getWidth(), 200));
+            //setOpaque(false);
 
-        gbc.gridy = 0;
-        JLabel[] labelPreviewCakes = new JLabel[size];
-        for (int i = 0; i < size; ++i) {
-            gbc.gridx = i + 1;
-            labelPreviewCakes[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * i, 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT)));
-            panel.add(labelPreviewCakes[i], gbc);
+            // TODO
+            // 소유 빌딩 카드
+            // 소유 빌딩 블록
+            // 이번 라운드의 시작 플레이어
+            // 현재 라운드 수
+            // 현재 턴의 플레이어 행동
+
+            mPanelSelectUsableCake = new PanelSelectUsableCake();
+            mPanelCakeList = new PanelCakeList();
+            mPanelCardList = new PanelCardList();
+            mPanelStatus = new PanelStatus();
+
+            add(mPanelSelectUsableCake);
+            add(mPanelCakeList);
+            add(mPanelCardList);
+            add(mPanelStatus);
         }
 
-        gbc.gridy = 1;
-        gbc.gridx = 0;
-        panel.add(new JLabel("선택 개수"), gbc);
-        JSpinner[] spinners = new JSpinner[size];
-        for (int i = 0; i < size; ++i) {
-            gbc.gridx = i + 1;
-            spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1));
-            spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
-            panel.add(spinners[i], gbc);
+        public PanelSelectUsableCake getPanelSelectUsableCake() {
+            return mPanelSelectUsableCake;
         }
 
-        gbc.gridy = 2;
-        gbc.gridx = 0;
-        panel.add(new JLabel("잔여 개수"), gbc);
-        for (int i = 0; i < size; ++i) {
-            gbc.gridx = i + 1;
-            panel.add(new JLabel(String.format("%d", mMyPlayer.getCakeCount(layers[i]))), gbc);
+        public PanelCakeList getPanelCakeList() {
+            return mPanelCakeList;
         }
 
-        gbc.gridy = 3;
-        gbc.gridx = 0;
-        gbc.gridwidth = 5;
-        panel.add(new JLabel("- 사용할 블록 6개를 선택하세요 -", SwingConstants.CENTER), gbc);
+        public PanelCardList getPanelCardList() {
+            return mPanelCardList;
+        }
 
-        gbc.gridy = 4;
-        gbc.gridx = 0;
-        gbc.gridwidth = 5;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        var buttonApply = new JButton(String.format("%d %s", (mTurnCount) / 4 + 1, "라운드 시작"));
-        buttonApply.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int cakeCount = 0;
-                for (int i = 0; i < size; ++i) {
-                    cakeCount += (Integer) spinners[i].getValue();
-                }
+        public PanelStatus getPanelStatus() {
+            return mPanelStatus;
+        }
 
-                if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
-                    JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
 
-                    return;
-                }
+        }
+    }
 
-                mMyPlayer.setCakeSelectingFinished(true);
+    private class PanelSelectUsableCake extends JPanel {
+        public PanelSelectUsableCake() {
+            setLayout(new GridBagLayout());
+            setOpaque(false);
 
-                for (int i = 0; i < size; ++i) {
-                    int count = (Integer) spinners[i].getValue();
-                    for (int c = 0; c < count; ++c) {
-                        mMyPlayer.takeCake(layers[i]);
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(2,2,2,2);
+
+            final int size = CakeLayerType.values().length;
+            final CakeLayerType[] layers = CakeLayerType.values();
+
+            gbc.gridy = 0;
+            JLabel[] labelPreviewCakes = new JLabel[size];
+            for (int i = 0; i < size; ++i) {
+                gbc.gridx = i + 1;
+                labelPreviewCakes[i] = new JLabel(new ImageIcon(ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * i, 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT)));
+                add(labelPreviewCakes[i], gbc);
+            }
+
+            gbc.gridy = 1;
+            gbc.gridx = 0;
+            add(new JLabel("선택 개수"), gbc);
+            JSpinner[] spinners = new JSpinner[size];
+            for (int i = 0; i < size; ++i) {
+                gbc.gridx = i + 1;
+                spinners[i] = new JSpinner(new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1));
+                spinners[i].setEditor(new JSpinner.DefaultEditor(spinners[i]));
+                add(spinners[i], gbc);
+            }
+
+            gbc.gridy = 2;
+            gbc.gridx = 0;
+            add(new JLabel("잔여 개수"), gbc);
+            for (int i = 0; i < size; ++i) {
+                gbc.gridx = i + 1;
+                add(new JLabel(String.format("%d", mMyPlayer.getCakeCount(layers[i]))), gbc);
+            }
+
+            gbc.gridy = 3;
+            gbc.gridx = 0;
+            gbc.gridwidth = 5;
+            add(new JLabel("- 사용할 블록 6개를 선택하세요 -", SwingConstants.CENTER), gbc);
+
+            gbc.gridy = 4;
+            gbc.gridx = 0;
+            gbc.gridwidth = 5;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            var buttonApply = new JButton(String.format("%d %s", (mTurnCount) / 4 + 1, "라운드 시작"));
+            buttonApply.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int cakeCount = 0;
+                    for (int i = 0; i < size; ++i) {
+                        cakeCount += (Integer) spinners[i].getValue();
                     }
-                }
 
-                mPanelUI.add(createPanelCardList());
+                    if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
+                        JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
 
+                        return;
+                    }
+
+                    mMyPlayer.setCakeSelectingFinished(true);
+
+                    for (int i = 0; i < size; ++i) {
+                        int count = (Integer) spinners[i].getValue();
+                        for (int c = 0; c < count; ++c) {
+                            mMyPlayer.takeCake(layers[i]);
+                        }
+                    }
+
+                    /*
+                    mPanelSelectUsableCake.setEnabled(false);
+                    mPanelCardList.setEnabled(true);
+
+
+                    mPanelHUD.revalidate();
+                    mPanelHUD.repaint();
+ */
+                /*
                 Object source = e.getSource();
                 if (source instanceof Component) {
                     Component comp = (Component) source;
-                    mPanelUI.remove(comp.getParent());
+                    mPanelHUD.remove(comp.getParent());
                     revalidate();
                     repaint();
                 }
-            }
-        });
-        panel.add(buttonApply, gbc);
+                */
+                }
+            });
+            add(buttonApply, gbc);
+        }
 
-        return panel;
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+
+            for (var component : getComponents() ){
+                component.setEnabled(false);
+            }
+        }
+    }
+
+    private class PanelCakeList extends JPanel {
+        private JList<ImageIcon> mListCake;
+
+        public PanelCakeList() {
+            setOpaque(false);
+            mListCake = new JList<ImageIcon>(mMyPlayer.getModelUsableCakeImages());
+            mListCake.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+            mListCake.setVisibleRowCount(-1);
+            mListCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            mListCake.setEnabled(false);
+
+            JScrollPane listCakeScroller = new JScrollPane();
+            listCakeScroller.setViewportView(mListCake);
+            listCakeScroller.setPreferredSize(new Dimension(240, 108));
+
+            add(listCakeScroller);
+        }
+
+        public JList<ImageIcon> getListCake() {
+            return mListCake;
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+
+            for (var component : getComponents() ){
+                component.setEnabled(false);
+            }
+        }
+    }
+
+    private class PanelCardList extends JPanel {
+        private JList<ImageIcon> mListCard;
+        private JButton mButtonPlayCard;
+
+        public PanelCardList() {
+            setLayout(new FlowLayout());
+            setOpaque(false);
+
+            mListCard = new JList<ImageIcon>(mMyPlayer.getModelCardImages());
+            mListCard.setEnabled(false);
+            mListCard.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+            mListCard.setVisibleRowCount(-1);
+            mListCard.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            mListCard.addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(final ListSelectionEvent e) {
+                    int selectedIndex = mListCard.getSelectedIndex();
+                    if (selectedIndex < 0) {
+
+                        return;
+                    }
+
+                    var card = mMyPlayer.getCards().get(selectedIndex);
+                    for (var city : mCities) {
+                        city.updatePreview(card, mMyPlayer.getPosition());
+                    }
+                }
+            });
+
+            JScrollPane mListCardScroller = new JScrollPane();
+            mListCardScroller.setViewportView(mListCard);
+            mListCardScroller.setPreferredSize(new Dimension(300, 72));
+
+            add(mListCardScroller);
+
+            mButtonPlayCard = new JButton("선택한 카드 내기");
+            mButtonPlayCard.setEnabled(false);
+            mButtonPlayCard.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int selectedIndex = mListCard.getSelectedIndex();
+                    if (selectedIndex < 0) {
+                        JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하세요.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+
+                        return;
+                    }
+
+                    var selectedCard = mMyPlayer.getCards().get(selectedIndex);
+
+                    mMyPlayer.useCard(selectedCard);
+                    mDummyCards.add(selectedCard);
+                    Collections.shuffle(mDummyCards);
+
+                    mButtonPlayCard.setEnabled(false);
+
+                    mListCard.setSelectedIndex(-1);
+                    mListCard.setEnabled(false);
+                }
+            });
+            add(mButtonPlayCard);
+
+        }
+
+        public JList<ImageIcon> getListCard() {
+            return mListCard;
+        }
+
+        public JButton getButtonPlayCard() {
+            return mButtonPlayCard;
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+
+            for (var component : getComponents() ){
+                component.setEnabled(false);
+            }
+        }
+    }
+
+    private class PanelStatus extends JPanel {
+        private JLabel mLabelRound;
+        private JLabel mLabelNowPlayer;
+        private JLabel mLabelStartPlayer;
+        private JLabel mLabelPlayerAction;
+
+        public PanelStatus() {
+            setLayout(new GridLayout(4, 1));
+
+            mLabelRound = new JLabel("1 라운드");
+            add(mLabelRound);
+
+            mLabelNowPlayer = new JLabel("현재 차례");
+            add(mLabelNowPlayer);
+
+            mLabelStartPlayer = new JLabel("시작 플레이어");
+            add(mLabelStartPlayer);
+
+            mLabelPlayerAction = new JLabel("현재 턴의 플레이어 행동");
+            add(mLabelPlayerAction);
+        }
+
+        public void update() {
+
+        }
+
+
     }
 }

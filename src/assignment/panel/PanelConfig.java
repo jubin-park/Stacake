@@ -12,7 +12,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class PanelConfig extends JPanel implements IUpdatable {
+public final class PanelConfig extends JPanel implements IUpdatable {
     private GridBagConstraints mGridBagConstraints = new GridBagConstraints();
     private JTextField mTextFieldId = new JTextField(10);
     private JLabel mLabelLimitSecondsPerTurn = new JLabel(StringUtility.EMPTY, SwingConstants.CENTER);
