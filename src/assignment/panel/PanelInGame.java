@@ -494,7 +494,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
             setLayout(new GridBagLayout());
             setOpaque(false);
             setPreferredSize(new Dimension(208, Config.HUD_HEIGHT));
-            setBorder(BorderFactory.createTitledBorder("케익 보충"));
+            setBorder(BorderFactory.createTitledBorder("냉장고"));
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(2,2,2,2);
@@ -532,7 +532,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
             gbc.gridy = 3;
             gbc.gridx = 0;
             gbc.gridwidth = 5;
-            add(new JLabel("- 사용할 블록 6개를 선택하세요 -", SwingConstants.CENTER), gbc);
+            add(new JLabel("- 사용할 케익 6개를 선택하세요 -", SwingConstants.CENTER), gbc);
 
             gbc.gridy = 4;
             gbc.gridx = 0;
@@ -548,7 +548,7 @@ public final class PanelInGame extends JPanel implements Runnable, IUpdatable {
                     }
 
                     if (cakeCount != Config.MAX_SELECTING_CAKE_COUNT) {
-                        JOptionPane.showMessageDialog(FrameMain.getInstance(), "블록은 반드시 6개를 선택해야 합니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(FrameMain.getInstance(), "케익은 반드시 6개를 선택해야 합니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION | JOptionPane.ERROR_MESSAGE);
 
                         return;
                     }
