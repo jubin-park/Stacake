@@ -11,6 +11,8 @@ public enum CardType {
     RC21(7),
     RC22(8);
 
+    public static final int SIZE = values().length;
+
     private int mIndex;
 
     CardType(final int index) {

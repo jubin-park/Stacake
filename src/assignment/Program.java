@@ -11,7 +11,7 @@ public class Program {
             Config.setUserId(args[0]);
         }
         else {
-            Config.setDebugMode(false);
+            Config.setTestMode(false);
         }
         Config.loadAndUpdateProperties();
 

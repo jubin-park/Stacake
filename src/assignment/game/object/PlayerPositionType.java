@@ -6,6 +6,8 @@ public enum PlayerPositionType {
     NORTH(2),
     EAST(3);
 
+    public static final int SIZE = values().length;
+
     private int mIndex;
 
     PlayerPositionType(final int index) {

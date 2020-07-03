@@ -6,6 +6,8 @@ public enum PlayerColorType {
     GREEN(2),
     BLUE(3);
 
+    public static final int SIZE = values().length;
+
     private int mIndex;
 
     PlayerColorType(final int index) {

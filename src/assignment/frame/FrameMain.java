@@ -12,12 +12,11 @@ public final class FrameMain extends JFrame {
 
     public FrameMain(final int width, final int height) {
         super(Config.FRAME_TITLE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         if (sInstance == null) {
             sInstance = this;
         }
-
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
         addWindowListener(new WindowAdapter() {
             @Override

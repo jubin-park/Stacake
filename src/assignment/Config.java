@@ -11,11 +11,13 @@ public final class Config {
     /*
      *  Game Configuration
      */
+
     public static final int FRAME_WIDTH = 912;
     public static final int FRAME_HEIGHT = 740;
     public static final String FRAME_TITLE = "Stacake";
 
     public static final int ROUND_CARD_COUNT = 4;
+    public static final int TIMER_DELAY = 100;
 
     public static final int HUD_HEIGHT = 214;
 
@@ -52,20 +54,21 @@ public final class Config {
     /*
      * Property Configuration
      */
+
     private static final String CONFIG_FILE_NAME = "config.properties";
 
     private static final String PROPERTY_USER_ID = "user_id";
     private static final String PROPERTY_LIMIT_SECONDS_PER_TURN = "limit_seconds_per_turn";
     private static final String PROPERTY_SOUND_EFFECT_VOLUME = "sound_effect_volume";
 
-    private static final String DEFAULT_USER_ID = "Java-man";
+    private static final String DEFAULT_USER_ID = "Jubin Park";
     private static final String DEFAULT_LIMIT_SECONDS_PER_TURN = "20";
     private static final String DEFAULT_SOUND_EFFECT_VOLUME = "95";
 
     private static String sUserId = DEFAULT_USER_ID;
     private static byte sLimitSecondsPerTurn = Byte.parseByte(DEFAULT_LIMIT_SECONDS_PER_TURN);
     private static byte sSoundEffectVolume = Byte.parseByte(DEFAULT_SOUND_EFFECT_VOLUME);
-    private static boolean sbDebugMode = true;
+    private static boolean sbTestMode = true;
 
     private Config() {
 
@@ -75,33 +78,33 @@ public final class Config {
         return sUserId;
     }
 
-    public static void setUserId(final String sUserId) {
-        Config.sUserId = sUserId;
-    }
-
     public static byte getLimitSecondsPerTurn() {
         return sLimitSecondsPerTurn;
-    }
-
-    public static void setLimitSecondsPerTurn(final byte sLimitSecondsPerTurn) {
-        Config.sLimitSecondsPerTurn = sLimitSecondsPerTurn;
     }
 
     public static byte getSoundEffectVolume() {
         return sSoundEffectVolume;
     }
 
+    public static boolean getTestMode() {
+        return sbTestMode;
+    }
+
+    public static void setUserId(final String sUserId) {
+        Config.sUserId = sUserId;
+    }
+
+    public static void setLimitSecondsPerTurn(final byte sLimitSecondsPerTurn) {
+        Config.sLimitSecondsPerTurn = sLimitSecondsPerTurn;
+    }
+
     public static void setSoundEffectVolume(final byte sSoundEffectVolume) {
         Config.sSoundEffectVolume = sSoundEffectVolume;
     }
 
-    public static boolean getDebugMode() {
-        return sbDebugMode;
-    }
-
-    public static void setDebugMode(final boolean isDebugMode) {
-        if (Config.sbDebugMode) {
-            Config.sbDebugMode = isDebugMode;
+    public static void setTestMode(final boolean isTestMode) {
+        if (Config.sbTestMode) {
+            Config.sbTestMode = isTestMode;
         }
     }
 

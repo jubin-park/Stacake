@@ -24,6 +24,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -32,8 +33,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 
 public final class PanelInGame extends JPanel {
-    private static final int TIMER_DELAY = 100;
-
     private Timer mTimer;
     private String[] netPlayerIds;
     private int mTurnCount;
@@ -48,7 +47,7 @@ public final class PanelInGame extends JPanel {
     private PanelHeadUpDisplay mPanelHUD;
     private PanelLog mPanelLog;
 
-    public PanelInGame(String[] netPlayerIds) {
+    public PanelInGame(final String[] netPlayerIds) {
         locateMarkers(netPlayerIds);
         initializeDummyCards();
 
@@ -87,36 +86,213 @@ public final class PanelInGame extends JPanel {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(ResourceManager.getInstance().getImageBackground2(), 0, 0, null);
+    public String toString() {
+        return "PanelInGame";
     }
 
     public void start() {
-        mTimer = new javax.swing.Timer(TIMER_DELAY, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+        mTimer = new javax.swing.Timer(Config.TIMER_DELAY, new ActionListener() {
+            public void actionPerformed(final ActionEvent e) {
                 update();
             }
         });
         mTimer.start();
     }
 
+    @Override
+    protected void paintComponent(final Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(ResourceManager.getInstance().getImageBackground2(), 0, 0, null);
+    }
+
+    // 점수 계산 (각 라운드 마다)
     private void calculateScore() {
-        /*
-            점수 계산 (각 라운드 마다)
-            1 전체 중 가장 높은 빌딩을 소유한 플레이어 +3 (동점인 경우 아무
-            도 받지 못함)
-            2 각 도시별로 가장 많은 빌딩을 소유한 플레이어 +2 (동점인 경우
-            아무도 받지 못함)
-            3 각 플레이어가 소유한 빌딩 1채 당 +1
-            3
-            (G) 4 라운드를 마치고 가장 높은 점수를 얻은 플레이어가 승리.
-            동점이면 가장 높은 빌딩을 소유한 플레이어가 승리.
-            그래도 동점이면 가장 많은 빌딩을 소유한 플레이어가 승리
-         */
+        // 1. 전체 중 가장 높은 빌딩을 소유한 플레이어 +3 (동점인 경우 아무도 받지 못함)
+        {
+            int maxHeight = 0;
+            HashSet<PlayerPositionType> highestCakeOwnerPositions = new HashSet<PlayerPositionType>();
+            for (var city : mCities) {
+                for (var spot : city.getSpots()) {
+                    int height = spot.getCakeHeight();
+                    if (height <= 0 || maxHeight > height) {
+                        continue;
+                    }
 
+                    if (maxHeight < height) {
+                        maxHeight = height;
+                        highestCakeOwnerPositions.clear();
+                    }
+                    highestCakeOwnerPositions.add(spot.getOwnerPosition());
+                }
+            }
+
+            if (highestCakeOwnerPositions.size() == 1) {
+                getPlayerByPosition((PlayerPositionType) highestCakeOwnerPositions.toArray()[0]).addScore(3);
+            }
+        }
+
+        // 2. 각 도시별로 가장 많은 빌딩을 소유한 플레이어 +2 (동점인 경우 아무도 받지 못함)
         for (var city : mCities) {
+            int[] spotCounts = new int[PlayerPositionType.SIZE];
+            int maxSpotCount = 0;
+            PlayerPositionType p = null;
 
+            for (var spot : city.getSpots()) {
+                if (spot.getCakeHeight() <= 0) {
+                    continue;
+                }
+
+                int index = spot.getOwnerPosition().getIndex();
+
+                if (maxSpotCount < ++spotCounts[index]) {
+                    maxSpotCount = spotCounts[index];
+                    p = spot.getOwnerPosition();
+                }
+            }
+
+            int overlappedSpotCount = 0;
+            for (var count : spotCounts) {
+                if (maxSpotCount == count) {
+                    ++overlappedSpotCount;
+                }
+            }
+
+            if (overlappedSpotCount == 1) {
+                getPlayerByPosition(p).addScore(2);
+            }
+        }
+
+        // 3. 각 플레이어가 소유한 빌딩 1채 당 +1
+        for (var city : mCities) {
+            for (var spot : city.getSpots()) {
+                if (spot.getCakeHeight() <= 0) {
+                    continue;
+                }
+
+                getPlayerByPosition(spot.getOwnerPosition()).addScore(1);
+            }
+        }
+    }
+
+    private Player getPlayerByPosition(final PlayerPositionType playerPositionType) {
+        for (var player : mPlayers) {
+            if (player.getPosition() == playerPositionType) {
+                return player;
+            }
+        }
+        return null;
+    }
+
+    private Player getWinner() {
+        // 4. 라운드를 마치고 가장 높은 점수를 얻은 플레이어가 승리
+        int maxScore = 0;
+        for (var player : mPlayers) {
+            if (maxScore < player.getScore()) {
+                maxScore = player.getScore();
+            }
+        }
+
+        ArrayList<Player> highestScorePlayers = new ArrayList<Player>();
+        for (var player : mPlayers) {
+            if (maxScore == player.getScore()) {
+                highestScorePlayers.add(player);
+            }
+        }
+
+        if (highestScorePlayers.size() == 1) {
+            return highestScorePlayers.get(0);
+        }
+
+        // 5. 동점이면 가장 높은 빌딩을 소유한 플레이어가 승리
+        int maxHeight = 0;
+        HashSet<PlayerPositionType> highestCakeOwnerPositions = new HashSet<PlayerPositionType>();
+        for (var city : mCities) {
+            for (var spot : city.getSpots()) {
+                int height = spot.getCakeHeight();
+                if (height <= 0 || maxHeight > height) {
+                    continue;
+                }
+
+                if (maxHeight < height) {
+                    maxHeight = height;
+                    highestCakeOwnerPositions.clear();
+                }
+                highestCakeOwnerPositions.add(spot.getOwnerPosition());
+            }
+        }
+
+        if (highestCakeOwnerPositions.size() == 1) {
+            return getPlayerByPosition((PlayerPositionType) highestCakeOwnerPositions.toArray()[0]);
+        }
+
+        // 6. 그래도 동점이면 가장 많은 빌딩을 소유한 플레이어가 승리
+        int[] counts = new int[PlayerPositionType.SIZE];
+        for (var positionType : highestCakeOwnerPositions) {
+            int index = positionType.getIndex();
+
+            for (var city : mCities) {
+                for (var spot : city.getSpots()) {
+                    if (spot.getCakeHeight() <= 0) {
+                        continue;
+                    }
+
+                    if (spot.getOwnerPosition() == positionType) {
+                        ++counts[index];
+                    }
+                }
+            }
+        }
+
+        int maxCount = 0;
+        for (var positionType : highestCakeOwnerPositions) {
+            int index = positionType.getIndex();
+            if (maxCount < counts[index]) {
+                maxCount = counts[index];
+            }
+        }
+
+        for (var positionType : highestCakeOwnerPositions) {
+            int index = positionType.getIndex();
+            if (maxCount == counts[index]) {
+                return getPlayerByPosition(positionType);
+            }
+        }
+
+        return null;
+    }
+
+    private void locateMarkers(final String[] netPlayerIds) {
+        Random rand = new Random(System.currentTimeMillis());
+
+        ArrayList<PlayerColorType> colors = new ArrayList<PlayerColorType>(Arrays.asList(PlayerColorType.values()));
+        ArrayList<PlayerPositionType> positions = new ArrayList<PlayerPositionType>(Arrays.asList(PlayerPositionType.values()));
+
+        mPlayers.add(mMyPlayer);
+        for (var id : netPlayerIds) {
+            mPlayers.add(new NetPlayer(id));
+        }
+        int computerNum = 0;
+        while (mPlayers.size() < Config.MAX_PLAYER_SIZE) {
+            mPlayers.add(new AIPlayer("computer" + computerNum++));
+        }
+        Collections.shuffle(mPlayers);
+
+        int positionIndex = 0;
+        for (var player : mPlayers) {
+            int colorIndex = rand.nextInt(colors.size());
+            player.setColor(colors.get(colorIndex));
+            colors.remove(colorIndex);
+            player.setPosition(positions.get(positionIndex++));
+            player.initializeCakes();
+            player.createMarker();
+        }
+    }
+
+    private void initializeDummyCards() {
+        for (var card : CardType.values()) {
+            for (int i = 0; i < 5; ++i) {
+                mDummyCards.add(card);
+            }
         }
     }
 
@@ -130,7 +306,7 @@ public final class PanelInGame extends JPanel {
 
                 // 랜덤 카드 4장씩 분배
                 for (var player : mPlayers) {
-                    for (int i = 0; i < 4; ++i) {
+                    for (int i = 0; i < Config.ROUND_CARD_COUNT; ++i) {
                         player.takeCardFromDummy(mDummyCards);
                     }
                 }
@@ -140,6 +316,11 @@ public final class PanelInGame extends JPanel {
                 break;
 
             case NEW_ROUND:
+                if (mRoundCount > 0) {
+                    calculateScore();
+                    mPanelLog.printScores();
+                }
+
                 if (mRoundCount >= Config.MAX_ROUND_COUNT) {
                     mGameFlow = GameFlowType.GAME_OVER;
 
@@ -231,7 +412,7 @@ public final class PanelInGame extends JPanel {
                 } else if (targetPlayer instanceof AIPlayer) {
 
                     var ai = (AIPlayer) targetPlayer;
-                    var card = ai.useRandomCard();
+                    var card = ai.pickUpRandomCard();
                     mDummyCards.add(card);
 
                     ArrayList<Spot> targetSpots = new ArrayList<Spot>();
@@ -275,48 +456,14 @@ public final class PanelInGame extends JPanel {
                 break;
 
             case GAME_OVER:
-                mPanelLog.println("게임 끝");
+                mPanelLog.println("- 게임 끝 -");
+                mPanelLog.println(String.format("우승자 : %s", getWinner().getId()));
                 mTimer.stop();
 
                 break;
 
             default:
                 assert (false);
-        }
-    }
-
-    private void locateMarkers(String[] netPlayerIds) {
-        Random rand = new Random(System.currentTimeMillis());
-
-        ArrayList<PlayerColorType> colors = new ArrayList<PlayerColorType>(Arrays.asList(PlayerColorType.values()));
-        ArrayList<PlayerPositionType> positions = new ArrayList<PlayerPositionType>(Arrays.asList(PlayerPositionType.values()));
-
-        mPlayers.add(mMyPlayer);
-        for (var id : netPlayerIds) {
-            mPlayers.add(new NetPlayer(id));
-        }
-        int computerNum = 0;
-        while (mPlayers.size() < Config.MAX_PLAYER_SIZE) {
-            mPlayers.add(new AIPlayer("computer" + computerNum++));
-        }
-        Collections.shuffle(mPlayers);
-
-        int positionIndex = 0;
-        for (var player : mPlayers) {
-            int colorIndex = rand.nextInt(colors.size());
-            player.setColor(colors.get(colorIndex));
-            colors.remove(colorIndex);
-            player.setPosition(positions.get(positionIndex++));
-            player.initializeCakes();
-            player.createMarker();
-        }
-    }
-
-    private void initializeDummyCards() {
-        for (var card : CardType.values()) {
-            for (int i = 0; i < 5; ++i) {
-                mDummyCards.add(card);
-            }
         }
     }
 
@@ -459,7 +606,6 @@ public final class PanelInGame extends JPanel {
             setLayout(new BorderLayout());
             setPreferredSize(new Dimension(200, getHeight()));
             setBorder(BorderFactory.createTitledBorder("로그 메세지"));
-            //setBackground(Color.BLUE);
             setOpaque(false);
 
             mTextAreaLog = new JTextArea();
@@ -479,6 +625,18 @@ public final class PanelInGame extends JPanel {
         public void println(String text) {
             mTextAreaLog.append(text);
             mTextAreaLog.append(System.lineSeparator());
+        }
+
+        private void printScores() {
+            println(StringUtility.EMPTY);
+            println("=".repeat(30));
+            println(String.format(" * %d 라운드 점수 결과", mRoundCount));
+            println("-".repeat(50));
+            for (var player : mPlayers) {
+                println(String.format(" - %s : %d점", player.getId(), player.getScore()));
+            }
+            println("=".repeat(30));
+            println(StringUtility.EMPTY);
         }
 
         public void clear() {
@@ -573,7 +731,7 @@ public final class PanelInGame extends JPanel {
 
             for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                 gbc.gridx = i + 1;
-                mSpinnerNumberModels[i] = new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1);
+                mSpinnerNumberModels[i] = new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeLayerCount(layers[i])), 1);
                 mSpinners[i] = new JSpinner(mSpinnerNumberModels[i]);
                 mSpinners[i].setEditor(new JSpinner.DefaultEditor(mSpinners[i]));
                 add(mSpinners[i], gbc);
@@ -642,8 +800,8 @@ public final class PanelInGame extends JPanel {
             final CakeLayerType[] layers = CakeLayerType.values();
 
             for (int i = 0; i < CakeLayerType.SIZE; ++i) {
-                mLabelRemainCakeCounts[i].setText(String.format("%d", mMyPlayer.getCakeCount(layers[i])));
-                mSpinnerNumberModels[i] = new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeCount(layers[i])), 1);
+                mLabelRemainCakeCounts[i].setText(String.format("%d", mMyPlayer.getCakeLayerCount(layers[i])));
+                mSpinnerNumberModels[i] = new SpinnerNumberModel(0, 0, Math.min(Config.MAX_SELECTING_CAKE_COUNT, mMyPlayer.getCakeLayerCount(layers[i])), 1);
                 mSpinners[i].setValue(0);
                 mSpinners[i].setModel(mSpinnerNumberModels[i]);
             }
@@ -756,7 +914,7 @@ public final class PanelInGame extends JPanel {
                         city.drawTargetImages(selectedCard, mMyPlayer.getPosition());
                     }
 
-                    mMyPlayer.useCard(selectedCard);
+                    mMyPlayer.pickUpCard(selectedCard);
                     mDummyCards.add(selectedCard);
                     Collections.shuffle(mDummyCards);
 
@@ -771,14 +929,6 @@ public final class PanelInGame extends JPanel {
             gbc.gridy = 1;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             add(mButtonPlayCard, gbc);
-        }
-
-        public JList<ImageIcon> getListCard() {
-            return mListCard;
-        }
-
-        public JButton getButtonPlayCard() {
-            return mButtonPlayCard;
         }
 
         @Override
@@ -799,7 +949,6 @@ public final class PanelInGame extends JPanel {
         private JLabel mLabelRound;
         private JLabel mLabelNowPlayer;
         private JLabel mLabelStartPlayer;
-        private JLabel mLabelPlayerAction;
 
         public PanelStatus() {
             setLayout(new GridLayout(4, 2));
@@ -822,22 +971,22 @@ public final class PanelInGame extends JPanel {
             mLabelNowPlayer = new JLabel();
             add(mLabelNowPlayer);
 
-            JLabel labelPlayerAction = new JLabel("행동");
-            add(labelPlayerAction);
-            mLabelPlayerAction = new JLabel();
-            add(mLabelPlayerAction);
+            JButton buttonExit = new JButton("나가기");
+            buttonExit.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    var panelManager = PanelManager.getInstance();
+                    panelManager.popPanel();
+                    panelManager.gotoPanel(new PanelIntro());
+                }
+            });
+            add(buttonExit);
         }
 
         public void update() {
             mLabelRound.setText(String.format("%d", mRoundCount));
             mLabelStartPlayer.setText(mPlayers.get(mStartPlayerIndex).getId());
             mLabelNowPlayer.setText(mPlayers.get((mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE).getId());
-            mLabelPlayerAction.setText("공격");
         }
-    }
-
-    @Override
-    public String toString() {
-        return "PanelInGame";
     }
 }

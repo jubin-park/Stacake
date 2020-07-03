@@ -8,7 +8,6 @@ import javax.swing.*;
 
 public final class Marker {
     private Player mPlayer;
-
     private BufferedImage mSubImage;
     private JLayeredPane mLayeredPane;
     private JLabel mLabelMarker;

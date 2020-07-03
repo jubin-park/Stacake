@@ -18,7 +18,7 @@ public final class AIPlayer extends Player {
         mUsableCakes.add(selectedCake);
     }
 
-    public CardType useRandomCard() {
+    public CardType pickUpRandomCard() {
         assert (!mCards.isEmpty());
 
         Random random = new Random(System.currentTimeMillis());
