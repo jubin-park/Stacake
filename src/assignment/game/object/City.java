@@ -6,10 +6,10 @@ import javax.swing.*;
 
 public final class City {
     private static int[][] INDICES_2D_MAP= new int[][] {
-            {0, 1, 2, 3, 4, 5, 6, 7, 8},
-            {2, 5, 8, 1, 4, 7, 0, 3, 6},
-            {8, 7, 6, 5, 4, 3, 2, 1, 0},
-            {6, 3, 0, 7, 4, 1, 8, 5, 2}
+        {0, 1, 2, 3, 4, 5, 6, 7, 8},
+        {2, 5, 8, 1, 4, 7, 0, 3, 6},
+        {8, 7, 6, 5, 4, 3, 2, 1, 0},
+        {6, 3, 0, 7, 4, 1, 8, 5, 2}
     };
 
     /*
@@ -59,11 +59,13 @@ public final class City {
         }
     }
 
-    public void updatePreview(final CardType card, final PlayerPositionType playerPositionType) {
+    public void clearTargetImages() {
         for (var spot : mSpots) {
             spot.setTargetVisible(false);
         }
+    }
 
+    public void drawTargetImages(final CardType card, final PlayerPositionType playerPositionType) {
         int index = INDICES_2D_MAP[playerPositionType.getIndex()][card.getIndex()];
         mSpots.get(index).setTargetVisible(true);
     }

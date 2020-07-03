@@ -41,15 +41,21 @@ public final class Spot {
         }
     }
 
-    public void updateSpotColor(final Player player) {
+    public void updateColor(final Player player) {
         if (getCakeLayerCount(player.getPosition()) <= 0) {
-            mLabelSpot.setIcon(ResourceManager.getInstance().getImageIconDefaultSpot());
+            clearColor();
+
             return;
         }
+
         int x = player.getPosition().getIndex()  * Config.SPOT_IMAGE_WIDTH;
         int y = (player.getColor().getIndex() + 1) * Config.SPOT_IMAGE_HEIGHT;
         var subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
         mLabelSpot.setIcon(new ImageIcon(subImage));
+    }
+
+    public void clearColor() {
+        mLabelSpot.setIcon(ResourceManager.getInstance().getImageIconDefaultSpot());
     }
 
     public void stackCake(final Cake cake) {

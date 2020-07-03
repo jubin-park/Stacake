@@ -32,9 +32,13 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 
 public final class PanelInGame extends JPanel implements Runnable {
+    private static final long serialVersionUID = 0L;
+    private static final int TIMER_DELAY = 1000;
+
     private String[] netPlayerIds;
 
     private int mTurnCount;
+    private int mLastTurnCount;
     private int mRoundCount;
     private int mStartPlayerIndex;
     private GameFlowType mGameFlow = GameFlowType.GAME_START;
@@ -112,20 +116,28 @@ public final class PanelInGame extends JPanel implements Runnable {
         }
     }
 
-    public synchronized void start() {
-        var thread = new Thread(this);
-        FrameMain.getInstance().setRunning(true);
-        thread.start();
+    public void start() {
+        new javax.swing.Timer(TIMER_DELAY, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                update();
+            }
+        }).start();
+        //var thread = new Thread(this);
+        //FrameMain.getInstance().setRunning(true);
+        //thread.start();
     }
 
-    public synchronized void stop() {
+    public void stop() {
         FrameMain.getInstance().setRunning(false);
     }
 
-    private synchronized void update() {
+    private void update() {
         switch (mGameFlow) {
             case GAME_START:
                 mPanelLog.println("환영합니다.");
+
+                mTurnCount = 0;
+                mLastTurnCount = -1;
 
                 // 랜덤 카드 4장씩 분배
                 for (var player : mPlayers) {
@@ -133,6 +145,7 @@ public final class PanelInGame extends JPanel implements Runnable {
                         player.takeCardFromDummy(mDummyCards);
                     }
                 }
+                mPanelLog.println(String.format("각각 %d장의 카드를 받았습니다.", Config.ROUND_CARD_COUNT));
 
                 mGameFlow = GameFlowType.NEW_ROUND;
                 break;
@@ -145,14 +158,13 @@ public final class PanelInGame extends JPanel implements Runnable {
                 }
 
                 mPanelLog.println(String.format("%d 라운드 시작합니다.", ++mRoundCount));
-                mPanelLog.println(String.format("각각 %d장의 카드를 받았습니다.", Config.ROUND_CARD_COUNT));
                 mPanelLog.println(String.format("각자 냉장고에서 케익 %d개를 꺼내세요.", Config.MAX_SELECTING_CAKE_COUNT));
                 mPanelHUD.mPanelCakeFridge.setEnabled(true);
 
-                mGameFlow = GameFlowType.CHOOSE_SIX_CAKES;
+                mGameFlow = GameFlowType.CHOOSE_AI_PLAYER_SIX_CAKES;
                 break;
 
-            case CHOOSE_SIX_CAKES:
+            case CHOOSE_AI_PLAYER_SIX_CAKES:
                 mMyPlayer.setCardSelected(false);
                 mMyPlayer.setCakeSelected(false);
 
@@ -168,28 +180,21 @@ public final class PanelInGame extends JPanel implements Runnable {
                     }
                 }
 
-                boolean bAllSelected = false;
-                while (!bAllSelected) {
-                    bAllSelected = true;
-                    for (var player : mPlayers) {
-                        if (!player.isCakeSelectingFinished()) {
-                            bAllSelected = false;
-                            break;
-                        }
-                    }
+                mGameFlow = GameFlowType.CHOOSE_MY_PLAYER_SIX_CAKES;
+                break;
+
+            case CHOOSE_MY_PLAYER_SIX_CAKES:
+                if (mMyPlayer.isCakeSelectingFinished()) {
+                    Random random = new Random(System.currentTimeMillis());
+                    mStartPlayerIndex = random.nextInt(Config.MAX_PLAYER_SIZE);
+                    mPanelLog.println(String.format("%s 님부터 시작합니다.", mPlayers.get(mStartPlayerIndex).getId()));
+
+                    mGameFlow = GameFlowType.USE_CARD_AND_CAKE;
                 }
 
-                Random random = new Random(System.currentTimeMillis());
-                mStartPlayerIndex = random.nextInt(Config.MAX_PLAYER_SIZE);
-                mPanelLog.println(String.format("%s 님부터 시작합니다.", mPlayers.get(mStartPlayerIndex).getId()));
-
-                mGameFlow = GameFlowType.USE_CARD_AND_CAKE;
                 break;
 
             case USE_CARD_AND_CAKE:
-                mMyPlayer.setCardSelected(false);
-                mMyPlayer.setCakeSelected(false);
-
                 if (mTurnCount >= Config.MAX_PLAYER_SIZE * Config.MAX_SELECTING_CAKE_COUNT) {
                     mTurnCount = 0;
                     mGameFlow = GameFlowType.NEW_ROUND;
@@ -201,21 +206,30 @@ public final class PanelInGame extends JPanel implements Runnable {
                 var targetPlayer = mPlayers.get(index);
 
                 if (targetPlayer instanceof MyPlayer) {
-                    mPanelLog.println("당신의 차례입니다.");
+                    if (mLastTurnCount != mTurnCount) {
+                        mLastTurnCount = mTurnCount;
 
-                    mPanelHUD.mPanelCardList.setEnabled(true);
-                    mPanelHUD.mPanelCakeList.setEnabled(false);
-                    while (!mMyPlayer.isCardSelected() && FrameMain.getInstance().isRunning()) {
-                        //System.out.println("카드 선택중..");
+                        mMyPlayer.setCardSelected(false);
+                        mMyPlayer.setCakeSelected(false);
+
+                        mPanelLog.println("당신의 차례입니다.");
+
+                        mPanelHUD.mPanelCardList.setEnabled(true);
+                        mPanelHUD.mPanelCakeList.setEnabled(false);
+                    }
+
+                    if (!mMyPlayer.isCardSelected()) {
+                        return;
                     }
 
                     mPanelHUD.mPanelCardList.setEnabled(false);
                     mPanelHUD.mPanelCakeList.setEnabled(true);
-                    while (!mMyPlayer.isCakeSelected() && FrameMain.getInstance().isRunning()) {
-                        //System.out.println("케익 선택중..");
+
+                    if (!mMyPlayer.isCakeSelected()) {
+                        return;
                     }
 
-                    System.out.println("여기서 왜 멈추냐고");
+                    mPanelHUD.mPanelCakeList.setEnabled(false);
 
                 } else if (targetPlayer instanceof NetPlayer) {
 
@@ -244,11 +258,13 @@ public final class PanelInGame extends JPanel implements Runnable {
 
                     targetSpot.stackCake(targetCake);
                     targetSpot.updateLabels();
+
                     for (var city : mCities) {
                         for (var spot : city.getSpots()) {
-                            spot.updateSpotColor(ai);
+                            spot.clearColor();
                         }
                     }
+                    targetSpot.updateColor(ai);
 
                 } else {
                     assert (false) : "Invalid Player";
@@ -367,15 +383,24 @@ public final class PanelInGame extends JPanel implements Runnable {
                                 return;
                             }
 
+                            for (var city : mCities) {
+                                city.clearTargetImages();
+                            }
+
                             mMyPlayer.useCake(cake);
                             mMyPlayer.setCakeSelected(true);
 
-                            //mPanelHUD.mPanelCakeList.mListCake.remove(selectedIndex);
                             mPanelHUD.mPanelCakeList.mListCake.setSelectedIndex(-1);
 
                             spot.stackCake(cake);
                             spot.updateLabels();
-                            spot.updateSpotColor(mMyPlayer);
+
+                            for (var city : mCities) {
+                                for (var spot : city.getSpots()) {
+                                    spot.clearColor();
+                                }
+                            }
+                            spot.updateColor(mMyPlayer);
                         }
 
                         @Override
@@ -700,7 +725,8 @@ public final class PanelInGame extends JPanel implements Runnable {
 
                     var card = mMyPlayer.getCards().get(selectedIndex);
                     for (var city : mCities) {
-                        city.updatePreview(card, mMyPlayer.getPosition());
+                        city.clearTargetImages();
+                        city.drawTargetImages(card, mMyPlayer.getPosition());
                     }
                 }
             });
@@ -727,17 +753,16 @@ public final class PanelInGame extends JPanel implements Runnable {
                         return;
                     }
 
-                    mMyPlayer.setCardSelected(true);
-
                     var selectedCard = mMyPlayer.getCards().get(selectedIndex);
 
                     mMyPlayer.useCard(selectedCard);
                     mDummyCards.add(selectedCard);
                     Collections.shuffle(mDummyCards);
-
-                    mListCard.setSelectedIndex(-1);
+                    
                     setEnabled(false);
                     mPanelHUD.mPanelCakeList.setEnabled(true);
+
+                    mMyPlayer.setCardSelected(true);
                 }
             });
             gbc.gridy = 1;
