@@ -29,6 +29,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.DefaultCaret;
 
 public final class PanelInGame extends JPanel implements Runnable {
     private String[] netPlayerIds;
@@ -98,9 +99,8 @@ public final class PanelInGame extends JPanel implements Runnable {
         long now;
         long lastTime = System.nanoTime();
 
-        int maxTurnCount = Config.MAX_PLAYER_SIZE * Config.MAX_ROUND_COUNT;
         var frameMain = FrameMain.getInstance();
-        while (frameMain.isRunning() && mTurnCount < maxTurnCount) {
+        while (true) {
             now = System.nanoTime();
             delta += (now - lastTime) / tickPerSecond;
             lastTime = now;
@@ -126,11 +126,6 @@ public final class PanelInGame extends JPanel implements Runnable {
         switch (mGameFlow) {
             case GAME_START:
                 mPanelLog.println("환영합니다.");
-                mGameFlow = GameFlowType.NEW_ROUND;
-                break;
-
-            case NEW_ROUND:
-                mPanelLog.println(String.format("%d 라운드 시작합니다.", ++mRoundCount));
 
                 // 랜덤 카드 4장씩 분배
                 for (var player : mPlayers) {
@@ -139,6 +134,17 @@ public final class PanelInGame extends JPanel implements Runnable {
                     }
                 }
 
+                mGameFlow = GameFlowType.NEW_ROUND;
+                break;
+
+            case NEW_ROUND:
+                if (mRoundCount >= Config.MAX_ROUND_COUNT) {
+                    mGameFlow = GameFlowType.GAME_OVER;
+
+                    return;
+                }
+
+                mPanelLog.println(String.format("%d 라운드 시작합니다.", ++mRoundCount));
                 mPanelLog.println(String.format("각각 %d장의 카드를 받았습니다.", Config.ROUND_CARD_COUNT));
                 mPanelLog.println(String.format("각자 냉장고에서 케익 %d개를 꺼내세요.", Config.MAX_SELECTING_CAKE_COUNT));
                 mPanelHUD.mPanelCakeFridge.setEnabled(true);
@@ -147,26 +153,29 @@ public final class PanelInGame extends JPanel implements Runnable {
                 break;
 
             case CHOOSE_SIX_CAKES:
+                mMyPlayer.setCardSelected(false);
+                mMyPlayer.setCakeSelected(false);
+
                 // AIPlayer 케이크 6개 선택
                 for (var player : mPlayers) {
-                    if (player == mMyPlayer || player.isCakeSelectingFinished()) {
+                    if (player == mMyPlayer) {
                         continue;
                     }
-
-                    assert (player instanceof AIPlayer);
 
                     var ai = (AIPlayer) player;
                     for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
                         ai.takeRandomCake();
                     }
-
-                    ai.setCakeSelectingFinished(true);
                 }
 
-                // 케이크 6개 선택중?
-                for (var player : mPlayers) {
-                    if (!player.isCakeSelectingFinished()) {
-                        return;
+                boolean bAllSelected = false;
+                while (!bAllSelected) {
+                    bAllSelected = true;
+                    for (var player : mPlayers) {
+                        if (!player.isCakeSelectingFinished()) {
+                            bAllSelected = false;
+                            break;
+                        }
                     }
                 }
 
@@ -178,27 +187,12 @@ public final class PanelInGame extends JPanel implements Runnable {
                 break;
 
             case USE_CARD_AND_CAKE:
-                if (mTurnCount >= Config.MAX_PLAYER_SIZE) {
-                    ++mRoundCount;
+                mMyPlayer.setCardSelected(false);
+                mMyPlayer.setCakeSelected(false);
 
+                if (mTurnCount >= Config.MAX_PLAYER_SIZE * Config.MAX_SELECTING_CAKE_COUNT) {
                     mTurnCount = 0;
-                    for (var player : mPlayers) {
-                        player.setCakeSelectingFinished(false);
-                    }
-
-                    /*
-                    mListCake.setEnabled(true);
-                    mListCard.setEnabled(true);
-                    mButtonPlayCard.setEnabled(true);
-
-                     */
-
-                    if (mRoundCount >= Config.MAX_ROUND_COUNT) {
-                        mGameFlow = GameFlowType.GAME_OVER;
-                        return;
-                    }
-
-                    mGameFlow = GameFlowType.CHOOSE_SIX_CAKES;
+                    mGameFlow = GameFlowType.NEW_ROUND;
 
                     return;
                 }
@@ -206,48 +200,71 @@ public final class PanelInGame extends JPanel implements Runnable {
                 int index = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
                 var targetPlayer = mPlayers.get(index);
 
-                if (targetPlayer == mMyPlayer) {
+                if (targetPlayer instanceof MyPlayer) {
+                    mPanelLog.println("당신의 차례입니다.");
 
-                    
-                    return;
+                    mPanelHUD.mPanelCardList.setEnabled(true);
+                    mPanelHUD.mPanelCakeList.setEnabled(false);
+                    while (!mMyPlayer.isCardSelected() && FrameMain.getInstance().isRunning()) {
+                        //System.out.println("카드 선택중..");
+                    }
+
+                    mPanelHUD.mPanelCardList.setEnabled(false);
+                    mPanelHUD.mPanelCakeList.setEnabled(true);
+                    while (!mMyPlayer.isCakeSelected() && FrameMain.getInstance().isRunning()) {
+                        //System.out.println("케익 선택중..");
+                    }
+
+                    System.out.println("여기서 왜 멈추냐고");
+
+                } else if (targetPlayer instanceof NetPlayer) {
+
+                } else if (targetPlayer instanceof AIPlayer) {
+
+                    var ai = (AIPlayer) targetPlayer;
+                    var card = ai.useRandomCard();
+                    mDummyCards.add(card);
+
+                    ArrayList<Spot> targetSpots = new ArrayList<Spot>();
+                    ArrayList<Cake> targetCakes = new ArrayList<Cake>();
+                    for (var city : mCities) {
+                        var spot = city.getSpotByCake(card, ai.getPosition());
+                        for (var cake : ai.getUsableCakes()) {
+                            if (spot.isStackable(cake)) {
+                                targetSpots.add(spot);
+                                targetCakes.add(cake);
+                            }
+                        }
+                    }
+
+                    Random random2 = new Random(System.currentTimeMillis());
+                    int index2 = random2.nextInt(targetSpots.size());
+                    var targetSpot = targetSpots.get(index2);
+                    var targetCake = targetCakes.get(index2);
+
+                    targetSpot.stackCake(targetCake);
+                    targetSpot.updateLabels();
+                    for (var city : mCities) {
+                        for (var spot : city.getSpots()) {
+                            spot.updateSpotColor(ai);
+                        }
+                    }
+
+                } else {
+                    assert (false) : "Invalid Player";
                 }
 
                 mPanelLog.println(String.format("%s 님이 케익을 놓았습니다.", targetPlayer.getId()));
-                
-                var ai = (AIPlayer) targetPlayer;
-                var card = ai.useRandomCard();
-                mDummyCards.add(card);
 
-                ArrayList<Spot> targetSpots = new ArrayList<Spot>();
-                ArrayList<Cake> targetCakes = new ArrayList<Cake>();
-                for (var city : mCities) {
-                    var spot = city.getSpotByCake(card, ai.getPosition());
-                    for (var cake : ai.getUsableCakes()) {
-                        if (spot.isStackable(cake)) {
-                            targetSpots.add(spot);
-                            targetCakes.add(cake);
-                        }
-                    }
-                }
-
-                Random random2 = new Random(System.currentTimeMillis());
-                int index2 = random2.nextInt(targetSpots.size());
-                var targetSpot = targetSpots.get(index2);
-                var targetCake = targetCakes.get(index2);
-
-                targetSpot.stackCake(targetCake);
-                targetSpot.updateLabels();
-                for (var city : mCities) {
-                    for (var spot : city.getSpots()) {
-                        spot.updateSpotColor(ai);
-                    }
-                }
+                targetPlayer.takeCardFromDummy(mDummyCards);
+                mPanelLog.println(String.format("%s 님이 카드를 1장 가져갑니다.", targetPlayer.getId()));
 
                 ++mTurnCount;
 
                 break;
 
             case GAME_OVER:
+                mPanelLog.println("게임 끝");
                 break;
 
             default:
@@ -326,6 +343,10 @@ public final class PanelInGame extends JPanel implements Runnable {
                     spot.getLabelTarget().addMouseListener(new MouseListener() {
                         @Override
                         public void mouseClicked(MouseEvent e) {
+                            if (!mMyPlayer.isCardSelected() || mMyPlayer.isCakeSelected()) {
+                                return;
+                            }
+
                             int selectedIndex = mPanelHUD.getPanelCakeList().getListCake().getSelectedIndex();
                             if (selectedIndex < 0) {
                                 // TODO 카드 제출 후 사용 가능하도록
@@ -336,7 +357,7 @@ public final class PanelInGame extends JPanel implements Runnable {
                             var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
 
                             if (!spot.isStackable(cake)) {
-                                JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.YES_OPTION, JOptionPane.ERROR_MESSAGE);
 
                                 return;
                             }
@@ -347,15 +368,14 @@ public final class PanelInGame extends JPanel implements Runnable {
                             }
 
                             mMyPlayer.useCake(cake);
+                            mMyPlayer.setCakeSelected(true);
 
-                            //mListCake.setEnabled(false);
-                            //mPanelHUD.getPanelCakeList().getListCake().setSelectedIndex(-1);
+                            //mPanelHUD.mPanelCakeList.mListCake.remove(selectedIndex);
+                            mPanelHUD.mPanelCakeList.mListCake.setSelectedIndex(-1);
 
                             spot.stackCake(cake);
                             spot.updateLabels();
                             spot.updateSpotColor(mMyPlayer);
-
-                            ++mTurnCount;
                         }
 
                         @Override
@@ -422,6 +442,9 @@ public final class PanelInGame extends JPanel implements Runnable {
             setOpaque(false);
 
             mTextAreaLog = new JTextArea();
+            DefaultCaret caret = (DefaultCaret) mTextAreaLog.getCaret();
+            caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
             mTextAreaLog.setEditable(false);
 
             JScrollPane scroller = new JScrollPane(mTextAreaLog);
@@ -571,8 +594,6 @@ public final class PanelInGame extends JPanel implements Runnable {
                         return;
                     }
 
-                    mMyPlayer.setCakeSelectingFinished(true);
-
                     for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                         int count = (Integer) mSpinners[i].getValue();
                         for (int c = 0; c < count; ++c) {
@@ -582,7 +603,6 @@ public final class PanelInGame extends JPanel implements Runnable {
 
                     update();
                     setEnabled(false);
-
                 }
             });
             add(buttonApply, gbc);
@@ -610,6 +630,7 @@ public final class PanelInGame extends JPanel implements Runnable {
 
     private class PanelCakeList extends JPanel {
         private JList<ImageIcon> mListCake;
+        private JScrollPane mListCakeScroller;
 
         public PanelCakeList() {
             setLayout(new GridBagLayout());
@@ -622,16 +643,16 @@ public final class PanelInGame extends JPanel implements Runnable {
             mListCake.setVisibleRowCount(-1);
             mListCake.setLayoutOrientation(JList.HORIZONTAL_WRAP);
 
-            JScrollPane listCakeScroller = new JScrollPane();
-            listCakeScroller.setViewportView(mListCake);
-            listCakeScroller.setPreferredSize(new Dimension(210, 108));
+            mListCakeScroller = new JScrollPane();
+            mListCakeScroller.setViewportView(mListCake);
+            mListCakeScroller.setPreferredSize(new Dimension(210, 108));
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
             gbc.fill = GridBagConstraints.BOTH;
 
-            add(listCakeScroller, gbc);
+            add(mListCakeScroller, gbc);
         }
 
         public JList<ImageIcon> getListCake() {
@@ -645,12 +666,17 @@ public final class PanelInGame extends JPanel implements Runnable {
             for (var component : getComponents()) {
                 component.setEnabled(enabled);
             }
+
+            mListCakeScroller.getHorizontalScrollBar().setEnabled(enabled);
+            mListCakeScroller.getVerticalScrollBar().setEnabled(enabled);
+            mListCakeScroller.getViewport().getView().setEnabled(enabled);
         }
     }
 
     private class PanelCardList extends JPanel {
         private JList<ImageIcon> mListCard;
         private JButton mButtonPlayCard;
+        private JScrollPane mListCardScroller;
 
         public PanelCardList() {
             setLayout(new GridBagLayout());
@@ -679,7 +705,7 @@ public final class PanelInGame extends JPanel implements Runnable {
                 }
             });
 
-            JScrollPane mListCardScroller = new JScrollPane();
+            mListCardScroller = new JScrollPane();
             mListCardScroller.setViewportView(mListCard);
             mListCardScroller.setPreferredSize(new Dimension(300, 72));
 
@@ -701,6 +727,8 @@ public final class PanelInGame extends JPanel implements Runnable {
                         return;
                     }
 
+                    mMyPlayer.setCardSelected(true);
+
                     var selectedCard = mMyPlayer.getCards().get(selectedIndex);
 
                     mMyPlayer.useCard(selectedCard);
@@ -708,6 +736,8 @@ public final class PanelInGame extends JPanel implements Runnable {
                     Collections.shuffle(mDummyCards);
 
                     mListCard.setSelectedIndex(-1);
+                    setEnabled(false);
+                    mPanelHUD.mPanelCakeList.setEnabled(true);
                 }
             });
             gbc.gridy = 1;
@@ -730,6 +760,10 @@ public final class PanelInGame extends JPanel implements Runnable {
             for (var component : getComponents())  {
                 component.setEnabled(enabled);
             }
+
+            mListCardScroller.getHorizontalScrollBar().setEnabled(enabled);
+            mListCardScroller.getVerticalScrollBar().setEnabled(enabled);
+            mListCardScroller.getViewport().getView().setEnabled(enabled);
         }
     }
 

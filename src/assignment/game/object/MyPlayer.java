@@ -11,6 +11,8 @@ import javax.swing.*;
 public final class MyPlayer extends Player {
     private DefaultListModel<ImageIcon> mModelCardImages = new DefaultListModel<ImageIcon>();
     private DefaultListModel<ImageIcon> mModelUsableCakeImages = new DefaultListModel<ImageIcon>();
+    private boolean mbCardSelected;
+    private boolean mbCakeSelected;
 
     public MyPlayer(String id) {
         super(id);
@@ -22,6 +24,22 @@ public final class MyPlayer extends Player {
 
     public DefaultListModel<ImageIcon> getModelUsableCakeImages() {
         return mModelUsableCakeImages;
+    }
+
+    public boolean isCardSelected() {
+        return mbCardSelected;
+    }
+
+    public void setCardSelected(boolean bCardSelected) {
+        mbCardSelected = bCardSelected;
+    }
+
+    public boolean isCakeSelected() {
+        return mbCakeSelected;
+    }
+
+    public void setCakeSelected(boolean bCakeSelected) {
+        mbCakeSelected = bCakeSelected;
     }
 
     @Override

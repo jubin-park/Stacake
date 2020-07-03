@@ -1,5 +1,6 @@
 package assignment.game.object;
 
+import assignment.Config;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -105,11 +106,7 @@ public class Player {
     }
 
     public boolean isCakeSelectingFinished() {
-        return mbCakeSelectingFinished;
-    }
-
-    public void setCakeSelectingFinished(final boolean value) {
-        mbCakeSelectingFinished = value;
+        return mUsableCakes.size() == Config.MAX_SELECTING_CAKE_COUNT;
     }
 
     public void setColor(final PlayerColorType colorType) {
