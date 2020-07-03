@@ -1,0 +1,19 @@
+name=turn.wav
+title=Dealing Card
+author=f4ngy
+url=https://freesound.org/people/f4ngy/sounds/240777/
+
+name=bell.wav
+title=Hand Bells, G, Single.wav
+author=InspectorJ
+url=https://freesound.org/people/InspectorJ/sounds/339818/
+
+name=tada.wav
+title=Tada Fanfare A
+author=plasterbrain
+url=https://freesound.org/people/plasterbrain/sounds/397355/
+
+name=lose.wav
+title=Fail Sound Effect - Accoustic Guitar
+author=florianreichelt
+url=https://freesound.org/people/florianreichelt/sounds/412427/

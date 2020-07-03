@@ -13,6 +13,7 @@ import assignment.game.object.PlayerPositionType;
 import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
 import assignment.game.object.Spot;
+import assignment.utility.AudioManager;
 import assignment.utility.ResourceManager;
 import assignment.frame.FrameMain;
 import assignment.utility.StringUtility;
@@ -336,6 +337,8 @@ public final class PanelInGame extends JPanel {
                 mPanelLog.println(String.format("각자 냉장고에서 케익 %d개를 꺼내세요.", Config.MAX_SELECTING_CAKE_COUNT));
                 mPanelHUD.mPanelCakeFridge.setEnabled(true);
 
+                AudioManager.play("bell.wav");
+
                 mGameFlow = GameFlowType.CHOOSE_AI_PLAYER_SIX_CAKES;
                 break;
 
@@ -452,14 +455,22 @@ public final class PanelInGame extends JPanel {
                 mPanelLog.println(String.format("%s 님이 카드를 1장 가져갑니다.", targetPlayer.getId()));
 
                 ++mTurnCount;
+                AudioManager.play("turn.wav");
 
                 break;
 
             case GAME_OVER:
-                mPanelLog.println("- 게임 끝 -");
-                mPanelLog.println(String.format("우승자 : %s", getWinner().getId()));
-                mTimer.stop();
+                Player winner = getWinner();
+                if (winner == mMyPlayer) {
+                    AudioManager.play("tada.wav");
+                } else {
+                    AudioManager.play("lose.wav");
+                }
 
+                mPanelLog.println("- 게임 끝 -");
+                mPanelLog.println(String.format("우승자 : %s", winner.getId()));
+
+                mTimer.stop();
                 break;
 
             default:

@@ -1,5 +1,6 @@
 package assignment.panel;
 
+import assignment.utility.AudioManager;
 import assignment.utility.ResourceManager;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -67,6 +68,7 @@ public final class PanelIntro extends JPanel {
             public void actionPerformed(final ActionEvent e) {
                 var panelManager = PanelManager.getInstance();
                 panelManager.gotoPanel(new PanelConfig());
+                AudioManager.play("tada.wav");
             }
         });
         panelButtonList.add(buttonConfig);

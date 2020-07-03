@@ -17,7 +17,7 @@ public final class Config {
     public static final String FRAME_TITLE = "Stacake";
 
     public static final int ROUND_CARD_COUNT = 4;
-    public static final int TIMER_DELAY = 100;
+    public static final int TIMER_DELAY = 1000;
 
     public static final int HUD_HEIGHT = 214;
 
