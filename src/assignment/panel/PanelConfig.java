@@ -1,11 +1,14 @@
 package assignment.panel;
 
 import assignment.Config;
+import assignment.utility.AudioManager;
 import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import assignment.frame.FrameMain;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -95,6 +98,34 @@ public final class PanelConfig extends JPanel {
             }
         });
 
+        mSliderSoundEffectVolume.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                byte value = (byte)(((JSlider) (e.getSource())).getValue());
+                AudioManager.play("tada.wav", value);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
+
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
@@ -106,8 +137,6 @@ public final class PanelConfig extends JPanel {
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
         panelNested.add(mLabelSoundEffectVolume, gbc);
-
-
 
         JPanel panelNested2 = new JPanel(new GridBagLayout());
         panelNested2.setPreferredSize(new Dimension(350, 48));
