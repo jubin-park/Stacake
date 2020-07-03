@@ -40,6 +40,7 @@ public final class PanelInGame extends JPanel {
     private int mLastTurnCount;
     private int mRoundCount;
     private int mStartPlayerIndex;
+    private int mLimitTime;
     private GameFlowType mGameFlow = GameFlowType.GAME_START;
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
@@ -95,6 +96,9 @@ public final class PanelInGame extends JPanel {
         mTimer = new javax.swing.Timer(Config.TIMER_DELAY, new ActionListener() {
             public void actionPerformed(final ActionEvent e) {
                 update();
+                --mLimitTime;
+                mLimitTime = Math.max(0, mLimitTime);
+                mPanelHUD.mPanelStatus.updateTime();
             }
         });
         mTimer.start();
@@ -359,9 +363,18 @@ public final class PanelInGame extends JPanel {
                 }
 
                 mGameFlow = GameFlowType.CHOOSE_MY_PLAYER_SIX_CAKES;
+                mLimitTime = Config.getLimitSecondsPerTurn();
                 break;
 
             case CHOOSE_MY_PLAYER_SIX_CAKES:
+                if (mLimitTime <= 0) {
+                    for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
+                        mMyPlayer.takeRandomCake();
+                    }
+                    mPanelHUD.mPanelCakeFridge.setEnabled(false);
+                    mPanelHUD.mPanelCakeFridge.update();
+                }
+
                 if (mMyPlayer.isCakeSelectingFinished()) {
 
                     mPanelLog.println(String.format("%s 님부터 시작합니다.", mPlayers.get(mStartPlayerIndex).getId()));
@@ -392,13 +405,59 @@ public final class PanelInGame extends JPanel {
                         mMyPlayer.setCakeSelected(false);
 
                         mPanelLog.println("당신의 차례입니다.");
+                        mLimitTime = Config.getLimitSecondsPerTurn();
 
                         mPanelHUD.mPanelCardList.setEnabled(true);
                         mPanelHUD.mPanelCakeList.setEnabled(false);
                     }
 
+                    if (mLimitTime <= 0 && !mMyPlayer.isCardSelected()) {
+                        var card = mMyPlayer.pickUpRandomCard();
+                        mDummyCards.add(card);
+
+                        mMyPlayer.setCardSelected(true);
+                        mMyPlayer.setNowCard(card);
+
+                        mLimitTime = Config.getLimitSecondsPerTurn();
+                    }
+
                     if (!mMyPlayer.isCardSelected()) {
                         return;
+                    }
+
+                    if (mLimitTime <= 0 && !mMyPlayer.isCakeSelected()) {
+                        var card = mMyPlayer.getNowCard();
+
+                        ArrayList<Spot> targetSpots = new ArrayList<Spot>();
+                        ArrayList<Cake> targetCakes = new ArrayList<Cake>();
+                        for (var city : mCities) {
+                            var spot = city.getSpotByCake(card, mMyPlayer.getPosition());
+                            for (var cake : mMyPlayer.getUsableCakes()) {
+                                if (spot.isStackable(cake)) {
+                                    targetSpots.add(spot);
+                                    targetCakes.add(cake);
+                                }
+                            }
+                        }
+
+                        Random random2 = new Random(System.currentTimeMillis());
+                        int index2 = random2.nextInt(targetSpots.size());
+                        var targetSpot = targetSpots.get(index2);
+                        var targetCake = targetCakes.get(index2);
+
+                        targetSpot.stackCake(targetCake);
+                        targetSpot.updateLabels();
+
+                        mMyPlayer.useCake(targetCake);
+
+                        for (var city : mCities) {
+                            for (var spot : city.getSpots()) {
+                                spot.clearColor();
+                            }
+                        }
+                        targetSpot.updateColor(mMyPlayer);
+
+                        mMyPlayer.setCakeSelected(true);
                     }
 
                     mPanelHUD.mPanelCardList.setEnabled(false);
@@ -437,6 +496,7 @@ public final class PanelInGame extends JPanel {
 
                     targetSpot.stackCake(targetCake);
                     targetSpot.updateLabels();
+                    ai.useCake(targetCake);
 
                     for (var city : mCities) {
                         for (var spot : city.getSpots()) {
@@ -960,6 +1020,7 @@ public final class PanelInGame extends JPanel {
         private JLabel mLabelRound;
         private JLabel mLabelNowPlayer;
         private JLabel mLabelStartPlayer;
+        private JLabel mLabelTime;
 
         public PanelStatus() {
             setLayout(new GridLayout(4, 2));
@@ -982,6 +1043,11 @@ public final class PanelInGame extends JPanel {
             mLabelNowPlayer = new JLabel();
             add(mLabelNowPlayer);
 
+            mLabelTime = new JLabel();
+            mLabelTime.setHorizontalAlignment(SwingConstants.CENTER);
+            mLabelTime.setFont(new Font(mLabelTime.getFont().getName(), Font.BOLD, 18));
+            add(mLabelTime);
+
             JButton buttonExit = new JButton("나가기");
             buttonExit.addActionListener(new ActionListener() {
                 @Override
@@ -989,6 +1055,7 @@ public final class PanelInGame extends JPanel {
                     var panelManager = PanelManager.getInstance();
                     panelManager.popPanel();
                     panelManager.gotoPanel(new PanelIntro());
+                    mTimer.stop();
                 }
             });
             add(buttonExit);
@@ -998,6 +1065,10 @@ public final class PanelInGame extends JPanel {
             mLabelRound.setText(String.format("%d", mRoundCount));
             mLabelStartPlayer.setText(mPlayers.get(mStartPlayerIndex).getId());
             mLabelNowPlayer.setText(mPlayers.get((mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE).getId());
+        }
+
+        public void updateTime() {
+            mLabelTime.setText(String.format("%d초", mLimitTime));
         }
     }
 }

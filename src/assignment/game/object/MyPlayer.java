@@ -11,6 +11,7 @@ import javax.swing.*;
 public final class MyPlayer extends Player {
     private boolean mbCardSelected;
     private boolean mbCakeSelected;
+    private CardType mNowCard;
     private DefaultListModel<ImageIcon> mModelCardImages = new DefaultListModel<ImageIcon>();
     private DefaultListModel<ImageIcon> mModelUsableCakeImages = new DefaultListModel<ImageIcon>();
 
@@ -24,6 +25,10 @@ public final class MyPlayer extends Player {
 
     public boolean isCakeSelected() {
         return mbCakeSelected;
+    }
+
+    public CardType getNowCard() {
+        return mNowCard;
     }
 
     public DefaultListModel<ImageIcon> getModelCardImages() {
@@ -40,6 +45,10 @@ public final class MyPlayer extends Player {
 
     public void setCakeSelected(boolean bCakeSelected) {
         mbCakeSelected = bCakeSelected;
+    }
+
+    public void setNowCard(final CardType nowCard) {
+        mNowCard = nowCard;
     }
 
     @Override
@@ -65,6 +74,19 @@ public final class MyPlayer extends Player {
         mModelCardImages.remove(index);
     }
 
+    public CardType pickUpRandomCard() {
+        assert (!mCards.isEmpty());
+
+        Random random = new Random(System.currentTimeMillis());
+        int selectedIndex = random.nextInt(mCards.size());
+        var selectedCard = mCards.get(selectedIndex);
+
+        mCards.remove(selectedCard);
+        mModelCardImages.remove(selectedIndex);
+
+        return selectedCard;
+    }
+
     @Override
     public void takeCake(final CakeLayerType cakeLayerType) {
         final int size = mRemainCakes.size();
@@ -81,6 +103,21 @@ public final class MyPlayer extends Player {
             }
         }
     }
+
+    public void takeRandomCake() {
+        assert (!mRemainCakes.isEmpty());
+
+        Random random = new Random(System.currentTimeMillis());
+        int selectedIndex = random.nextInt(mRemainCakes.size());
+        var selectedCake = mRemainCakes.get(selectedIndex);
+
+        mRemainCakes.remove(selectedIndex);
+        mUsableCakes.add(selectedCake);
+
+        BufferedImage subImage = ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * (selectedCake.getLayerType().getValue() - 1), 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT);
+        mModelUsableCakeImages.addElement(new ImageIcon(subImage));
+    }
+
 
     @Override
     public void useCake(final Cake cake) {
