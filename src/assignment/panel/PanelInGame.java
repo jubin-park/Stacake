@@ -32,22 +32,19 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 
 public final class PanelInGame extends JPanel {
-    private static final long serialVersionUID = 0L;
     private static final int TIMER_DELAY = 100;
 
+    private Timer mTimer;
     private String[] netPlayerIds;
-
     private int mTurnCount;
     private int mLastTurnCount;
     private int mRoundCount;
     private int mStartPlayerIndex;
     private GameFlowType mGameFlow = GameFlowType.GAME_START;
-
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
     private ArrayList<City> mCities = new ArrayList<City>();
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
-
     private PanelHeadUpDisplay mPanelHUD;
     private PanelLog mPanelLog;
 
@@ -96,12 +93,33 @@ public final class PanelInGame extends JPanel {
     }
 
     public void start() {
-        new javax.swing.Timer(TIMER_DELAY, new ActionListener() {
+        mTimer = new javax.swing.Timer(TIMER_DELAY, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 update();
             }
-        }).start();
+        });
+        mTimer.start();
     }
+
+    private void calculateScore() {
+        /*
+            점수 계산 (각 라운드 마다)
+            1 전체 중 가장 높은 빌딩을 소유한 플레이어 +3 (동점인 경우 아무
+            도 받지 못함)
+            2 각 도시별로 가장 많은 빌딩을 소유한 플레이어 +2 (동점인 경우
+            아무도 받지 못함)
+            3 각 플레이어가 소유한 빌딩 1채 당 +1
+            3
+            (G) 4 라운드를 마치고 가장 높은 점수를 얻은 플레이어가 승리.
+            동점이면 가장 높은 빌딩을 소유한 플레이어가 승리.
+            그래도 동점이면 가장 많은 빌딩을 소유한 플레이어가 승리
+         */
+
+        for (var city : mCities) {
+
+        }
+    }
+
     private void update() {
         switch (mGameFlow) {
             case GAME_START:
@@ -258,6 +276,8 @@ public final class PanelInGame extends JPanel {
 
             case GAME_OVER:
                 mPanelLog.println("게임 끝");
+                mTimer.stop();
+
                 break;
 
             default:
@@ -265,7 +285,7 @@ public final class PanelInGame extends JPanel {
         }
     }
 
-    private synchronized void locateMarkers(String[] netPlayerIds) {
+    private void locateMarkers(String[] netPlayerIds) {
         Random rand = new Random(System.currentTimeMillis());
 
         ArrayList<PlayerColorType> colors = new ArrayList<PlayerColorType>(Arrays.asList(PlayerColorType.values()));

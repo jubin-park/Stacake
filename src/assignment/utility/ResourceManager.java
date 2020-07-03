@@ -15,6 +15,10 @@ public final class ResourceManager {
     public static final String SPOTS_IMAGE_PATH = "resources/images/spots.png";
     public static final String MARKERS_IMAGE_PATH = "resources/images/markers.png";
     public static final String TARGET_IMAGE_PATH = "resources/images/target.png";
+    public static final String SINGLE_GAME_IMAGE_PATH = "resources/images/single-game.png";
+    public static final String ONLINE_GAME_IMAGE_PATH = "resources/images/online-game.png";
+    public static final String CONFIG_IMAGE_PATH = "resources/images/config.png";
+    public static final String SHUTDOWN_IMAGE_PATH = "resources/images/shutdown.png";
 
     private static ResourceManager mInstance;
 
@@ -26,6 +30,10 @@ public final class ResourceManager {
     private BufferedImage mImageSetMarker;
     private BufferedImage mImageTarget;
     private ImageIcon mImageIconDefaultSpot;
+    private BufferedImage mImageSingleGame;
+    private BufferedImage mImageOnlineGame;
+    private BufferedImage mImageConfig;
+    private BufferedImage mImageShutdown;
 
     private ResourceManager() {
         try {
@@ -37,6 +45,11 @@ public final class ResourceManager {
             mImageSetMarker = ImageIO.read(Program.class.getResourceAsStream(MARKERS_IMAGE_PATH));
             mImageTarget = ImageIO.read(Program.class.getResourceAsStream(TARGET_IMAGE_PATH));
             mImageIconDefaultSpot = new ImageIcon(mImageSetSpot.getSubimage(0, 0, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT));
+            mImageSingleGame = ImageIO.read(Program.class.getResourceAsStream(SINGLE_GAME_IMAGE_PATH));
+            mImageOnlineGame = ImageIO.read(Program.class.getResourceAsStream(ONLINE_GAME_IMAGE_PATH));
+            mImageConfig = ImageIO.read(Program.class.getResourceAsStream(CONFIG_IMAGE_PATH));
+            mImageShutdown = ImageIO.read(Program.class.getResourceAsStream(SHUTDOWN_IMAGE_PATH));
+
         } catch (IOException ex) {
             assert (false) : ex;
         }
@@ -80,5 +93,21 @@ public final class ResourceManager {
 
     public ImageIcon getImageIconDefaultSpot() {
         return mImageIconDefaultSpot;
+    }
+
+    public BufferedImage getImageSingleGame() {
+        return mImageSingleGame;
+    }
+
+    public BufferedImage getImageOnlineGame() {
+        return mImageOnlineGame;
+    }
+
+    public BufferedImage getImageConfig() {
+        return mImageConfig;
+    }
+
+    public BufferedImage getImageShutdown() {
+        return mImageShutdown;
     }
 }

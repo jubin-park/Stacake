@@ -16,6 +16,7 @@ public final class Marker {
 
     public Marker(final Player player) {
         mPlayer = player;
+
         mSubImage = ResourceManager.getInstance().getImageSetMarker().getSubimage(mPlayer.getPosition().getIndex() * Config.MARKER_IMAGE_WIDTH, mPlayer.getColor().getIndex() * Config.MARKER_IMAGE_HEIGHT, Config.MARKER_IMAGE_WIDTH, Config.MARKER_IMAGE_HEIGHT);
 
         mLayeredPane = new JLayeredPane();
@@ -32,18 +33,9 @@ public final class Marker {
 
         mLayeredPane.add(mLabelId);
         mLayeredPane.add(mLabelMarker);
-        //mLayeredPane.setComponentZOrder(mLabelId, 0);
     }
 
     public JLayeredPane getLayeredPane() {
         return mLayeredPane;
-    }
-
-    public JLabel getLabelMarker() {
-        return mLabelMarker;
-    }
-
-    public JLabel getLabelId() {
-        return mLabelId;
     }
 }

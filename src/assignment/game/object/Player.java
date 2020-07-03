@@ -10,6 +10,7 @@ public class Player {
     protected PlayerColorType mColorType;
     protected PlayerPositionType mPositionType;
     protected boolean mbCakeSelectingFinished;
+    protected int mScore;
 
     protected ArrayList<Cake> mRemainCakes = new ArrayList<Cake>();
     protected ArrayList<Cake> mUsableCakes = new ArrayList<Cake>();
@@ -17,6 +18,14 @@ public class Player {
 
     protected Player(final String id) {
         mId = id;
+    }
+
+    public int getScore() {
+        return mScore;
+    }
+
+    public void addScore(final int score) {
+        mScore += score;
     }
 
     public int getCakeCount(final CakeLayerType cakeLayerType) {

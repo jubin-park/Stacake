@@ -23,7 +23,9 @@ public final class PanelIntro extends JPanel {
         panelButtonList.add(labelTitle);
 
         // buttons
-        var buttonSinglePlay = new JButton("Single Play");
+        var buttonSinglePlay = new JButton("혼자 놀기", new ImageIcon(ResourceManager.getInstance().getImageSingleGame()));
+        buttonSinglePlay.setVerticalTextPosition(SwingConstants.BOTTOM);
+        buttonSinglePlay.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonSinglePlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -35,7 +37,9 @@ public final class PanelIntro extends JPanel {
         });
         panelButtonList.add(buttonSinglePlay);
 
-        var buttonCreateNetPlay = new JButton("Create NetPlay");
+        var buttonCreateNetPlay = new JButton("같이 놀기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
+        buttonCreateNetPlay.setVerticalTextPosition(SwingConstants.BOTTOM);
+        buttonCreateNetPlay.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonCreateNetPlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -44,7 +48,9 @@ public final class PanelIntro extends JPanel {
         });
         panelButtonList.add(buttonCreateNetPlay);
 
-        var buttonJoinNetPlay = new JButton("Join NetPlay");
+        var buttonJoinNetPlay = new JButton("방 만들기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
+        buttonJoinNetPlay.setVerticalTextPosition(SwingConstants.BOTTOM);
+        buttonJoinNetPlay.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonJoinNetPlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -53,7 +59,9 @@ public final class PanelIntro extends JPanel {
         });
         panelButtonList.add(buttonJoinNetPlay);
 
-        var buttonConfig = new JButton("Configuration");
+        var buttonConfig = new JButton("환경 설정", new ImageIcon(ResourceManager.getInstance().getImageConfig()));
+        buttonConfig.setVerticalTextPosition(SwingConstants.BOTTOM);
+        buttonConfig.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
@@ -63,7 +71,9 @@ public final class PanelIntro extends JPanel {
         });
         panelButtonList.add(buttonConfig);
 
-        var buttonExit = new JButton("Shutdown");
+        var buttonExit = new JButton("종료", new ImageIcon(ResourceManager.getInstance().getImageShutdown()));
+        buttonExit.setVerticalTextPosition(SwingConstants.BOTTOM);
+        buttonExit.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonExit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
