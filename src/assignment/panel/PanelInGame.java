@@ -31,7 +31,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.DefaultCaret;
 
-public final class PanelInGame extends JPanel implements Runnable {
+public final class PanelInGame extends JPanel {
     private static final long serialVersionUID = 0L;
     private static final int TIMER_DELAY = 100;
 
@@ -95,42 +95,13 @@ public final class PanelInGame extends JPanel implements Runnable {
         g.drawImage(ResourceManager.getInstance().getImageBackground2(), 0, 0, null);
     }
 
-    @Override
-    public void run() {
-        int fps = 1;
-        double tickPerSecond = 1_000_000_000 / fps;
-        double delta = 0;
-        long now;
-        long lastTime = System.nanoTime();
-
-        var frameMain = FrameMain.getInstance();
-        while (true) {
-            now = System.nanoTime();
-            delta += (now - lastTime) / tickPerSecond;
-            lastTime = now;
-
-            if (delta >= 1.0) {
-                update();
-                delta--;
-            }
-        }
-    }
-
     public void start() {
         new javax.swing.Timer(TIMER_DELAY, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 update();
             }
         }).start();
-        //var thread = new Thread(this);
-        //FrameMain.getInstance().setRunning(true);
-        //thread.start();
     }
-
-    public void stop() {
-        FrameMain.getInstance().setRunning(false);
-    }
-
     private void update() {
         switch (mGameFlow) {
             case GAME_START:
