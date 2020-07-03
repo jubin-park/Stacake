@@ -760,6 +760,10 @@ public final class PanelInGame extends JPanel implements Runnable {
                     }
 
                     var selectedCard = mMyPlayer.getCards().get(selectedIndex);
+                    for (var city : mCities) {
+                        city.clearTargetImages();
+                        city.drawTargetImages(selectedCard, mMyPlayer.getPosition());
+                    }
 
                     mMyPlayer.useCard(selectedCard);
                     mDummyCards.add(selectedCard);
@@ -771,12 +775,6 @@ public final class PanelInGame extends JPanel implements Runnable {
                     mListCard.setSelectedIndex(-1);
 
                     mMyPlayer.setCardSelected(true);
-
-                    var card = mMyPlayer.getCards().get(selectedIndex);
-                    for (var city : mCities) {
-                        city.clearTargetImages();
-                        city.drawTargetImages(card, mMyPlayer.getPosition());
-                    }
                 }
             });
             gbc.gridy = 1;
