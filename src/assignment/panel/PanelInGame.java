@@ -427,6 +427,7 @@ public final class PanelInGame extends JPanel {
                 mPanelLog.println("- 게임 끝 -");
                 mPanelLog.println(String.format("우승자 : %s", winner.getId()));
 
+                mPanelHUD.setEnabled(false);
                 mTimer.stop();
 
                 break;

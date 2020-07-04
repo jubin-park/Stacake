@@ -15,7 +15,7 @@ public final class PanelIntro extends JPanel {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         setBackground(Color.WHITE);
 
-        JPanel panelButtonList = new JPanel(new GridLayout(6, 1));
+        JPanel panelButtonList = new JPanel(new GridLayout(4, 1));
 
         // title
         var labelTitle = new JLabel("<html><h1><strong><i>- Stacake -</i></strong></h1><p>Stack pieces of cake<hr></html>");
@@ -47,7 +47,7 @@ public final class PanelIntro extends JPanel {
 
             }
         });
-        panelButtonList.add(buttonCreateNetPlay);
+        //panelButtonList.add(buttonCreateNetPlay);
 
         var buttonJoinNetPlay = new JButton("방 만들기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
         buttonJoinNetPlay.setVerticalTextPosition(SwingConstants.BOTTOM);
@@ -58,7 +58,7 @@ public final class PanelIntro extends JPanel {
 
             }
         });
-        panelButtonList.add(buttonJoinNetPlay);
+        //panelButtonList.add(buttonJoinNetPlay);
 
         var buttonConfig = new JButton("환경 설정", new ImageIcon(ResourceManager.getInstance().getImageConfig()));
         buttonConfig.setVerticalTextPosition(SwingConstants.BOTTOM);
