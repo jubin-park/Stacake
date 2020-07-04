@@ -41,7 +41,7 @@ public final class Spot {
     public int getCakeLayerCount(final PlayerPositionType playerPositionType) {
         int count = 0;
         for (var cake : mCakes) {
-            if (cake.getPlayerPosition() == playerPositionType) {
+            if (cake.getOwner().getPosition() == playerPositionType) {
                 count += cake.getLayerType().getValue();
             }
         }
@@ -58,10 +58,12 @@ public final class Spot {
         return count;
     }
 
-    public PlayerPositionType getOwnerPosition() {
-        assert (mCakes.size() > 0);
+    public Player getOwnerOrNull() {
+        if (mCakes.isEmpty()) {
+            return null;
+        }
 
-        return mCakes.get(mCakes.size() - 1).getPlayerPosition();
+        return mCakes.get(mCakes.size() - 1).getOwner();
     }
 
     public void setTargetVisible(final boolean value) {
@@ -81,13 +83,13 @@ public final class Spot {
         }
     }
 
-    public void clearColor() {
+    public void clearSpot() {
         mLabelSpot.setIcon(ResourceManager.getInstance().getImageIconDefaultSpot());
     }
 
-    public void updateColor(final Player player) {
+    public void updateSpotColor(final Player player) {
         if (getCakeLayerCount(player.getPosition()) <= 0) {
-            clearColor();
+            clearSpot();
 
             return;
         }
@@ -95,6 +97,7 @@ public final class Spot {
         int x = player.getPosition().getIndex()  * Config.SPOT_IMAGE_WIDTH;
         int y = (player.getColor().getIndex() + 1) * Config.SPOT_IMAGE_HEIGHT;
         var subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
+
         mLabelSpot.setIcon(new ImageIcon(subImage));
     }
 
@@ -102,14 +105,14 @@ public final class Spot {
         mCakes.add(cake);
     }
 
-    public boolean isStackable(final Cake targetCake) {
+    public boolean isStackable(final Cake cake) {
         int targetLayerCount = 0;
         int maxLayerCount = 0;
+
         for (var positionType : PlayerPositionType.values()) {
             int count = getCakeLayerCount(positionType);
-            if (positionType == targetCake.getPlayerPosition()) {
+            if (positionType == cake.getOwner().getPosition()) {
                 targetLayerCount = count;
-
                 continue;
             }
 
@@ -118,7 +121,7 @@ public final class Spot {
             }
         }
 
-        return targetLayerCount + targetCake.getLayerType().getValue() >= maxLayerCount;
+        return targetLayerCount + cake.getLayerType().getValue() >= maxLayerCount;
     }
 
     public void addToJLayeredPane(final JLayeredPane layeredPane) {

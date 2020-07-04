@@ -1,5 +1,6 @@
 package assignment.game.object;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public final class AIPlayer extends Player {
@@ -7,26 +8,27 @@ public final class AIPlayer extends Player {
         super(id);
     }
 
-    public void takeRandomCake() {
-        assert (!mRemainCakes.isEmpty());
+    @Override
+    public void takeOutCardFromDummy(final ArrayList<CardType> dummyCards)  {
+        assert (!dummyCards.isEmpty());
 
         Random random = new Random(System.currentTimeMillis());
-        int selectedIndex = random.nextInt(mRemainCakes.size());
-        var selectedCake = mRemainCakes.get(selectedIndex);
+        int selectedIndex = random.nextInt(dummyCards.size());
+        var selectedCard = dummyCards.get(selectedIndex);
 
-        mRemainCakes.remove(selectedIndex);
-        mUsableCakes.add(selectedCake);
+        dummyCards.remove(selectedIndex);
+        mCards.add(selectedCard);
     }
 
-    public CardType pickUpRandomCard() {
-        assert (!mCards.isEmpty());
+    @Override
+    public void pickUpCard(final int index) {
+        mCardInHand = mCards.get(index);
+        mCards.remove(index);
+    }
 
-        Random random = new Random(System.currentTimeMillis());
-        int selectedIndex = random.nextInt(mCards.size());
-        var selectedCard = mCards.get(selectedIndex);
-
-        mCards.remove(selectedCard);
-
-        return selectedCard;
+    @Override
+    public void useCake(final int index) {
+        mCardInHand = null;
+        mUsableCakes.remove(index);
     }
 }

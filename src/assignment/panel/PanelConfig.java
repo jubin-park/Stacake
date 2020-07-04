@@ -60,7 +60,7 @@ public final class PanelConfig extends JPanel {
         gbc.gridy = 3;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
-        panelNested.add(label00, gbc);
+        panelNested.add(label02, gbc);
 
         // userId
         gbc.gridx = 1;

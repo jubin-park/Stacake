@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 public final class City {
-    private static int[][] INDICES_2D_MAP = new int[][] {
+    public final static int[][] INDICES_2D_MAP = new int[][] {
         {0, 1, 2, 3, 4, 5, 6, 7, 8},
         {2, 5, 8, 1, 4, 7, 0, 3, 6},
         {8, 7, 6, 5, 4, 3, 2, 1, 0},
@@ -54,23 +54,12 @@ public final class City {
         }
     }
 
-    public void clearTargetImages() {
-        for (var spot : mSpots) {
-            spot.setTargetVisible(false);
-        }
-    }
-
-    public void drawTargetImages(final CardType card, final PlayerPositionType playerPositionType) {
-        int index = INDICES_2D_MAP[playerPositionType.getIndex()][card.getIndex()];
-        mSpots.get(index).setTargetVisible(true);
-    }
-
     public ArrayList<Spot> getSpots() {
         return mSpots;
     }
 
-    public Spot getSpotByCake(final CardType card, final PlayerPositionType playerPositionType) {
-        return mSpots.get(INDICES_2D_MAP[playerPositionType.getIndex()][card.getIndex()]);
+    public Spot getSpotByCardAndPositionType(final CardType cardType, final PlayerPositionType playerPositionType) {
+        return mSpots.get(INDICES_2D_MAP[playerPositionType.getIndex()][cardType.getIndex()]);
     }
 
     public JLayeredPane getLayeredPane() {

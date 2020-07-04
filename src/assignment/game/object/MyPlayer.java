@@ -9,9 +9,7 @@ import java.util.Random;
 import javax.swing.*;
 
 public final class MyPlayer extends Player {
-    private boolean mbCardSelected;
     private boolean mbCakeSelected;
-    private CardType mNowCard;
     private DefaultListModel<ImageIcon> mModelCardImages = new DefaultListModel<ImageIcon>();
     private DefaultListModel<ImageIcon> mModelUsableCakeImages = new DefaultListModel<ImageIcon>();
 
@@ -20,15 +18,11 @@ public final class MyPlayer extends Player {
     }
 
     public boolean isCardSelected() {
-        return mbCardSelected;
+        return mCardInHand != null;
     }
 
     public boolean isCakeSelected() {
         return mbCakeSelected;
-    }
-
-    public CardType getNowCard() {
-        return mNowCard;
     }
 
     public DefaultListModel<ImageIcon> getModelCardImages() {
@@ -39,20 +33,12 @@ public final class MyPlayer extends Player {
         return mModelUsableCakeImages;
     }
 
-    public void setCardSelected(boolean bCardSelected) {
-        mbCardSelected = bCardSelected;
-    }
-
     public void setCakeSelected(boolean bCakeSelected) {
         mbCakeSelected = bCakeSelected;
     }
 
-    public void setNowCard(final CardType nowCard) {
-        mNowCard = nowCard;
-    }
-
     @Override
-    public void takeCardFromDummy(final ArrayList<CardType> dummyCards) {
+    public void takeOutCardFromDummy(final ArrayList<CardType> dummyCards) {
         assert (!dummyCards.isEmpty());
 
         Random random = new Random(System.currentTimeMillis());
@@ -68,33 +54,20 @@ public final class MyPlayer extends Player {
     }
 
     @Override
-    public void pickUpCard(final CardType card) {
-        final int index = mCards.indexOf(card);
+    public void pickUpCard(final int index) {
+        mCardInHand = mCards.get(index);
         mCards.remove(index);
         mModelCardImages.remove(index);
     }
 
-    public CardType pickUpRandomCard() {
-        assert (!mCards.isEmpty());
-
-        Random random = new Random(System.currentTimeMillis());
-        int selectedIndex = random.nextInt(mCards.size());
-        var selectedCard = mCards.get(selectedIndex);
-
-        mCards.remove(selectedCard);
-        mModelCardImages.remove(selectedIndex);
-
-        return selectedCard;
-    }
-
     @Override
-    public void takeCake(final CakeLayerType cakeLayerType) {
-        final int size = mRemainCakes.size();
+    public void takeOutCakeFromFridge(final CakeLayerType cakeLayerType) {
+        final int size = mFridgeCakes.size();
         for (int i = 0; i < size; ++i) {
-            var cake = mRemainCakes.get(i);
+            var cake = mFridgeCakes.get(i);
 
             if (cake.getLayerType() == cakeLayerType) {
-                mRemainCakes.remove(i);
+                mFridgeCakes.remove(i);
                 mUsableCakes.add(cake);
                 BufferedImage subImage = ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * (cakeLayerType.getValue() - 1), 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT);
                 mModelUsableCakeImages.addElement(new ImageIcon(subImage));
@@ -104,25 +77,37 @@ public final class MyPlayer extends Player {
         }
     }
 
-    public void takeRandomCake() {
-        assert (!mRemainCakes.isEmpty());
+    @Override
+    public void takeOutCakeFromFridgeByIndex(final int index) {
+        var cake = mFridgeCakes.get(index);
+        mFridgeCakes.remove(cake);
+        mUsableCakes.add(cake);
 
-        Random random = new Random(System.currentTimeMillis());
-        int selectedIndex = random.nextInt(mRemainCakes.size());
-        var selectedCake = mRemainCakes.get(selectedIndex);
-
-        mRemainCakes.remove(selectedIndex);
-        mUsableCakes.add(selectedCake);
-
-        BufferedImage subImage = ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * (selectedCake.getLayerType().getValue() - 1), 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT);
+        BufferedImage subImage = ResourceManager.getInstance().getImageSetCake().getSubimage(Config.CAKE_IMAGE_WIDTH * (cake.getLayerType().getValue() - 1), 0, Config.CAKE_IMAGE_WIDTH, Config.CAKE_IMAGE_HEIGHT);
         mModelUsableCakeImages.addElement(new ImageIcon(subImage));
     }
 
-
     @Override
-    public void useCake(final Cake cake) {
-        final int index = mUsableCakes.indexOf(cake);
+    public void useCake(final int index) {
+        mCardInHand = null;
+        mbCakeSelected = true;
         mUsableCakes.remove(index);
         mModelUsableCakeImages.remove(index);
+    }
+
+    public void initState() {
+        mCardInHand = null;
+        mbCakeSelected = false;
+    }
+
+    public void retrieveCard() {
+        assert (mCardInHand != null);
+        mCards.add(mCardInHand);
+
+        BufferedImage subImage = ResourceManager.getInstance().getImageSetCard().getSubimage(Config.CARD_IMAGE_HEIGHT * mCardInHand.getIndex(), 0, Config.CARD_IMAGE_WIDTH, Config.CARD_IMAGE_HEIGHT);
+        int degree = 90 * mPositionType.getIndex();
+        mModelCardImages.addElement(new ImageIcon(ImageUtility.rotateImageClockwise(subImage, degree)));
+
+        mCardInHand = null;
     }
 }

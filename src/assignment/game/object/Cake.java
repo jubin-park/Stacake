@@ -2,23 +2,23 @@ package assignment.game.object;
 
 public final class Cake {
     private final CakeLayerType mLayerType;
-    private final PlayerPositionType mPlayerPositionType;
+    private final Player mOwner;
 
-    public Cake(final CakeLayerType layerType, final PlayerPositionType playerPositionType) {
+    public Cake(final CakeLayerType layerType, final Player owner) {
         mLayerType = layerType;
-        mPlayerPositionType = playerPositionType;
+        mOwner = owner;
     }
 
     public CakeLayerType getLayerType() {
         return mLayerType;
     }
 
-    public PlayerPositionType getPlayerPosition() {
-        return mPlayerPositionType;
+    public Player getOwner() {
+        return mOwner;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (obj == this) {
             return true;
         }
@@ -28,6 +28,6 @@ public final class Cake {
         }
 
         Cake otherCake = (Cake) obj;
-        return mLayerType == otherCake.mLayerType && mPlayerPositionType == otherCake.mPlayerPositionType;
+        return mLayerType == otherCake.mLayerType && mOwner == otherCake.mOwner;
     }
 }

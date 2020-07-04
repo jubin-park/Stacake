@@ -3,16 +3,16 @@ package assignment.panel;
 import assignment.Config;
 import assignment.game.GameFlowType;
 import assignment.game.object.AIPlayer;
-import assignment.game.object.Cake;
+import assignment.game.object.PlayingTuple;
 import assignment.game.object.CakeLayerType;
 import assignment.game.object.CardType;
-import assignment.game.object.City;
 import assignment.game.object.MyPlayer;
 import assignment.game.object.PlayerColorType;
 import assignment.game.object.PlayerPositionType;
 import assignment.game.object.NetPlayer;
 import assignment.game.object.Player;
 import assignment.game.object.Spot;
+import assignment.game.object.World;
 import assignment.utility.AudioManager;
 import assignment.utility.ResourceManager;
 import assignment.frame.FrameMain;
@@ -25,7 +25,6 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -43,19 +42,19 @@ public final class PanelInGame extends JPanel {
     private int mLimitTime;
     private GameFlowType mGameFlow = GameFlowType.GAME_START;
     private MyPlayer mMyPlayer = new MyPlayer(Config.getUserId());
-    private ArrayList<City> mCities = new ArrayList<City>();
+    private World mWorld;
     private ArrayList<CardType> mDummyCards = new ArrayList<CardType>();
     private ArrayList<Player> mPlayers = new ArrayList<Player>();
     private PanelHeadUpDisplay mPanelHUD;
     private PanelLog mPanelLog;
 
     public PanelInGame(final String[] netPlayerIds) {
-        locateMarkers(netPlayerIds);
-        initializeDummyCards();
-
         setLayout(new BorderLayout());
         setBorder(new EmptyBorder(8, 8, 8, 8));
         setBackground(Color.WHITE);
+
+        locateMarkers(netPlayerIds);
+        initializeDummyCards();
 
         var panelGridBag = new JPanel(new GridBagLayout());
         panelGridBag.setOpaque(false);
@@ -104,6 +103,10 @@ public final class PanelInGame extends JPanel {
         mTimer.start();
     }
 
+    private void resetLimitTime() {
+        mLimitTime = Config.getLimitSecondsPerTurn();
+    }
+
     @Override
     protected void paintComponent(final Graphics g) {
         super.paintComponent(g);
@@ -113,79 +116,28 @@ public final class PanelInGame extends JPanel {
     // 점수 계산 (각 라운드 마다)
     private void calculateScore() {
         // 1. 전체 중 가장 높은 빌딩을 소유한 플레이어 +3 (동점인 경우 아무도 받지 못함)
-        {
-            int maxHeight = 0;
-            HashSet<PlayerPositionType> highestCakeOwnerPositions = new HashSet<PlayerPositionType>();
-            for (var city : mCities) {
-                for (var spot : city.getSpots()) {
-                    int height = spot.getCakeHeight();
-                    if (height <= 0 || maxHeight > height) {
-                        continue;
-                    }
-
-                    if (maxHeight < height) {
-                        maxHeight = height;
-                        highestCakeOwnerPositions.clear();
-                    }
-                    highestCakeOwnerPositions.add(spot.getOwnerPosition());
-                }
-            }
-
-            if (highestCakeOwnerPositions.size() == 1) {
-                getPlayerByPosition((PlayerPositionType) highestCakeOwnerPositions.toArray()[0]).addScore(3);
-            }
+        var highestCakeOwners = mWorld.getHighestCakeOwners();
+        if (highestCakeOwners.size() == 1) {
+            highestCakeOwners.get(0).addScore(3);
         }
 
         // 2. 각 도시별로 가장 많은 빌딩을 소유한 플레이어 +2 (동점인 경우 아무도 받지 못함)
-        for (var city : mCities) {
-            int[] spotCounts = new int[PlayerPositionType.SIZE];
-            int maxSpotCount = 0;
-            PlayerPositionType p = null;
-
-            for (var spot : city.getSpots()) {
-                if (spot.getCakeHeight() <= 0) {
-                    continue;
-                }
-
-                int index = spot.getOwnerPosition().getIndex();
-
-                if (maxSpotCount < ++spotCounts[index]) {
-                    maxSpotCount = spotCounts[index];
-                    p = spot.getOwnerPosition();
-                }
-            }
-
-            int overlappedSpotCount = 0;
-            for (var count : spotCounts) {
-                if (maxSpotCount == count) {
-                    ++overlappedSpotCount;
-                }
-            }
-
-            if (overlappedSpotCount == 1) {
-                getPlayerByPosition(p).addScore(2);
-            }
+        var mostCakeOwnersPerCity = mWorld.getMostCakeOwnersPerCity();
+        for (var owner : mostCakeOwnersPerCity) {
+            owner.addScore(2);
         }
 
         // 3. 각 플레이어가 소유한 빌딩 1채 당 +1
-        for (var city : mCities) {
+        for (var city : mWorld.getCities()) {
             for (var spot : city.getSpots()) {
-                if (spot.getCakeHeight() <= 0) {
+                var owner = spot.getOwnerOrNull();
+                if (owner == null) {
                     continue;
                 }
 
-                getPlayerByPosition(spot.getOwnerPosition()).addScore(1);
+                owner.addScore(1);
             }
         }
-    }
-
-    private Player getPlayerByPosition(final PlayerPositionType playerPositionType) {
-        for (var player : mPlayers) {
-            if (player.getPosition() == playerPositionType) {
-                return player;
-            }
-        }
-        return null;
     }
 
     private Player getWinner() {
@@ -209,57 +161,21 @@ public final class PanelInGame extends JPanel {
         }
 
         // 5. 동점이면 가장 높은 빌딩을 소유한 플레이어가 승리
-        int maxHeight = 0;
-        HashSet<PlayerPositionType> highestCakeOwnerPositions = new HashSet<PlayerPositionType>();
-        for (var city : mCities) {
-            for (var spot : city.getSpots()) {
-                int height = spot.getCakeHeight();
-                if (height <= 0 || maxHeight > height) {
-                    continue;
-                }
-
-                if (maxHeight < height) {
-                    maxHeight = height;
-                    highestCakeOwnerPositions.clear();
-                }
-                highestCakeOwnerPositions.add(spot.getOwnerPosition());
+        ArrayList<Player> highestCakeOwners = new ArrayList<Player>();
+        for (var owner : mWorld.getHighestCakeOwners()) {
+            if (highestScorePlayers.contains(owner)) {
+                highestCakeOwners.add(owner);
             }
         }
 
-        if (highestCakeOwnerPositions.size() == 1) {
-            return getPlayerByPosition((PlayerPositionType) highestCakeOwnerPositions.toArray()[0]);
+        if (highestCakeOwners.size() == 1) {
+            return highestCakeOwners.get(0);
         }
 
         // 6. 그래도 동점이면 가장 많은 빌딩을 소유한 플레이어가 승리
-        int[] counts = new int[PlayerPositionType.SIZE];
-        for (var positionType : highestCakeOwnerPositions) {
-            int index = positionType.getIndex();
-
-            for (var city : mCities) {
-                for (var spot : city.getSpots()) {
-                    if (spot.getCakeHeight() <= 0) {
-                        continue;
-                    }
-
-                    if (spot.getOwnerPosition() == positionType) {
-                        ++counts[index];
-                    }
-                }
-            }
-        }
-
-        int maxCount = 0;
-        for (var positionType : highestCakeOwnerPositions) {
-            int index = positionType.getIndex();
-            if (maxCount < counts[index]) {
-                maxCount = counts[index];
-            }
-        }
-
-        for (var positionType : highestCakeOwnerPositions) {
-            int index = positionType.getIndex();
-            if (maxCount == counts[index]) {
-                return getPlayerByPosition(positionType);
+        for (var owner : mWorld.getMostCakeOwnersPerCity()) {
+            if (highestCakeOwners.contains(owner)) {
+                return owner;
             }
         }
 
@@ -288,31 +204,195 @@ public final class PanelInGame extends JPanel {
             player.setColor(colors.get(colorIndex));
             colors.remove(colorIndex);
             player.setPosition(positions.get(positionIndex++));
-            player.initializeCakes();
+            player.fillUpCakeFridge();
             player.createMarker();
         }
     }
 
     private void initializeDummyCards() {
-        for (var card : CardType.values()) {
+        for (var cardType : CardType.values()) {
             for (int i = 0; i < 5; ++i) {
-                mDummyCards.add(card);
+                mDummyCards.add(cardType);
             }
         }
+    }
+
+    private void updateNewRound() {
+        if (mRoundCount > 0) {
+            // 점수 계산
+            calculateScore();
+            // 점수 출력
+            mPanelLog.printScores();
+        }
+
+        // 게임 끝
+        if (mRoundCount >= Config.MAX_ROUND_COUNT) {
+            mGameFlow = GameFlowType.GAME_OVER;
+
+            return;
+        }
+
+        // 턴 수 초기화
+        mTurnCount = 0;
+        mLastTurnCount = -1;
+
+        // 왼쪽 플레이어부터 시작
+        mStartPlayerIndex = (mStartPlayerIndex + 1) % Config.MAX_PLAYER_SIZE;
+
+        mPanelLog.println(String.format("%d 라운드 시작합니다.", ++mRoundCount));
+        mPanelLog.println(String.format("각자 냉장고에서 케익 %d개를 꺼내세요.", Config.MAX_SELECTING_CAKE_COUNT));
+
+        // 냉장고 개방
+        mPanelHUD.mPanelCakeFridge.setEnabled(true);
+
+        AudioManager.play("bell.wav");
+
+        mGameFlow = GameFlowType.CAKE_FRIDGE_AI_PLAYER;
+    }
+
+    private void updateCakeFridgeAIPlayer() {
+        mMyPlayer.setCakeSelected(false);
+
+        // AIPlayer 케이크 6개 선택
+        for (var player : mPlayers) {
+            if (player == mMyPlayer) {
+                continue;
+            }
+
+            for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
+                player.takeOutCakeFromFridgeByIndex(player.getRandomFridgeCakeIndex());
+            }
+        }
+
+        resetLimitTime();
+
+        mGameFlow = GameFlowType.CAKE_FRIDGE_MY_PLAYER;
+    }
+
+    private void updateCakeFridgeMyPlayer() {
+        if (mLimitTime <= 0) {
+            for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
+                mMyPlayer.takeOutCakeFromFridgeByIndex(mMyPlayer.getRandomFridgeCakeIndex());
+            }
+
+            mPanelHUD.mPanelCakeFridge.update();
+            mPanelHUD.mPanelCakeFridge.setEnabled(false);
+        }
+
+        if (mMyPlayer.isCakeSelectingFinished()) {
+            mPanelLog.println(String.format("%s 님부터 시작합니다.", mPlayers.get(mStartPlayerIndex).getId()));
+            mPanelHUD.mPanelStatus.update();
+
+            mGameFlow = GameFlowType.PICK_UP_CARD_AND_USE_CARD;
+        }
+    }
+
+    private void updatePickUpCardAndUseCard() {
+        if (mTurnCount >= Config.MAX_PLAYER_SIZE * Config.MAX_SELECTING_CAKE_COUNT) {
+            mTurnCount = 0;
+            mGameFlow = GameFlowType.NEW_ROUND;
+
+            return;
+        }
+
+        mPanelHUD.mPanelStatus.update();
+        int targetPlayerIndex = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
+        var targetPlayer = mPlayers.get(targetPlayerIndex);
+
+        if (targetPlayer instanceof MyPlayer) {
+            if (mLastTurnCount != mTurnCount) {
+                mLastTurnCount = mTurnCount;
+
+                mMyPlayer.initState();
+
+                mPanelLog.println("당신의 차례입니다.");
+
+                mPanelHUD.mPanelCardList.setEnabled(true);
+                mPanelHUD.mPanelCakeList.setEnabled(false);
+
+                resetLimitTime();
+            }
+
+            if (mLimitTime > 0 && !mMyPlayer.isCakeSelected()) {
+                return;
+            }
+
+            // 시간 초과
+            if (mLimitTime <= 0) {
+                // 카드를 이미 선택했다면
+                if (mMyPlayer.getCardInHand() != null) {
+                    // 다시 버린다
+                    mDummyCards.remove(mMyPlayer.getCardInHand());
+                    mMyPlayer.retrieveCard();
+                }
+
+                // 랜덤
+                var tuple = mMyPlayer.createRandomPlayingTuple(mWorld);
+                var cardIndex = tuple.getCardIndex();
+                var cardType = mMyPlayer.getCard(cardIndex);
+                var cakeIndex = tuple.getCakeIndex();
+                var cake = mMyPlayer.getUsableCake(cakeIndex);
+                var spot = tuple.getSpot();
+
+                mDummyCards.add(cardType);
+                mWorld.clearTargetImages();
+                mMyPlayer.pickUpCard(cardIndex);
+                mMyPlayer.useCake(cakeIndex);
+                mMyPlayer.setCakeSelected(true);
+                mPanelHUD.mPanelCakeList.mListCake.setSelectedIndex(-1);
+
+                spot.stackCake(cake);
+                spot.updateLabels();
+                mWorld.clearAllSpots();
+                spot.updateSpotColor(mMyPlayer);
+            }
+
+        } else if (targetPlayer instanceof NetPlayer) {
+            resetLimitTime();
+        } else if (targetPlayer instanceof AIPlayer) {
+            resetLimitTime();
+
+            var tuple = targetPlayer.createRandomPlayingTuple(mWorld);
+            var cardIndex = tuple.getCardIndex();
+            var cardType = targetPlayer.getCard(cardIndex);
+            var cakeIndex = tuple.getCakeIndex();
+            var cake = targetPlayer.getUsableCake(cakeIndex);
+            var spot = tuple.getSpot();
+
+            mDummyCards.add(cardType);
+            targetPlayer.pickUpCard(cardIndex);
+            targetPlayer.useCake(cakeIndex);
+            spot.stackCake(cake);
+            spot.updateLabels();
+            mWorld.clearAllSpots();
+            spot.updateSpotColor(targetPlayer);
+
+        } else {
+            assert (false) : "Invalid Player";
+        }
+
+        mPanelLog.println(String.format("%s 님이 케익을 놓았습니다.", targetPlayer.getId()));
+
+        targetPlayer.takeOutCardFromDummy(mDummyCards);
+        mPanelLog.println(String.format("%s 님이 카드를 1장 가져갑니다.", targetPlayer.getId()));
+
+        ++mTurnCount;
+        AudioManager.play("turn.wav");
     }
 
     private void update() {
         switch (mGameFlow) {
             case GAME_START:
-                mPanelLog.println("환영합니다.");
-
+                // 시작 플레이어 랜덤 지정
                 Random random = new Random(System.currentTimeMillis());
                 mStartPlayerIndex = random.nextInt(Config.MAX_PLAYER_SIZE);
+
+                mPanelLog.println("환영합니다.");
 
                 // 랜덤 카드 4장씩 분배
                 for (var player : mPlayers) {
                     for (int i = 0; i < Config.ROUND_CARD_COUNT; ++i) {
-                        player.takeCardFromDummy(mDummyCards);
+                        player.takeOutCardFromDummy(mDummyCards);
                     }
                 }
                 mPanelLog.println(String.format("각각 %d장의 카드를 받았습니다.", Config.ROUND_CARD_COUNT));
@@ -321,202 +401,19 @@ public final class PanelInGame extends JPanel {
                 break;
 
             case NEW_ROUND:
-                if (mRoundCount > 0) {
-                    calculateScore();
-                    mPanelLog.printScores();
-                }
-
-                if (mRoundCount >= Config.MAX_ROUND_COUNT) {
-                    mGameFlow = GameFlowType.GAME_OVER;
-
-                    return;
-                }
-
-                mTurnCount = 0;
-                mLastTurnCount = -1;
-
-                mStartPlayerIndex = (mStartPlayerIndex + 1) % Config.MAX_PLAYER_SIZE;
-
-                mPanelLog.println(String.format("%d 라운드 시작합니다.", ++mRoundCount));
-                mPanelLog.println(String.format("각자 냉장고에서 케익 %d개를 꺼내세요.", Config.MAX_SELECTING_CAKE_COUNT));
-                mPanelHUD.mPanelCakeFridge.setEnabled(true);
-
-                AudioManager.play("bell.wav");
-
-                mGameFlow = GameFlowType.CHOOSE_AI_PLAYER_SIX_CAKES;
+                updateNewRound();
                 break;
 
-            case CHOOSE_AI_PLAYER_SIX_CAKES:
-                mMyPlayer.setCardSelected(false);
-                mMyPlayer.setCakeSelected(false);
-
-                // AIPlayer 케이크 6개 선택
-                for (var player : mPlayers) {
-                    if (player == mMyPlayer) {
-                        continue;
-                    }
-
-                    var ai = (AIPlayer) player;
-                    for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
-                        ai.takeRandomCake();
-                    }
-                }
-
-                mGameFlow = GameFlowType.CHOOSE_MY_PLAYER_SIX_CAKES;
-                mLimitTime = Config.getLimitSecondsPerTurn();
+            case CAKE_FRIDGE_AI_PLAYER:
+                updateCakeFridgeAIPlayer();
                 break;
 
-            case CHOOSE_MY_PLAYER_SIX_CAKES:
-                if (mLimitTime <= 0) {
-                    for (int i = 0; i < Config.MAX_SELECTING_CAKE_COUNT; ++i) {
-                        mMyPlayer.takeRandomCake();
-                    }
-                    mPanelHUD.mPanelCakeFridge.setEnabled(false);
-                    mPanelHUD.mPanelCakeFridge.update();
-                }
-
-                if (mMyPlayer.isCakeSelectingFinished()) {
-
-                    mPanelLog.println(String.format("%s 님부터 시작합니다.", mPlayers.get(mStartPlayerIndex).getId()));
-                    mPanelHUD.mPanelStatus.update();
-
-                    mGameFlow = GameFlowType.USE_CARD_AND_CAKE;
-                }
-
+            case CAKE_FRIDGE_MY_PLAYER:
+                updateCakeFridgeMyPlayer();
                 break;
 
-            case USE_CARD_AND_CAKE:
-                if (mTurnCount >= Config.MAX_PLAYER_SIZE * Config.MAX_SELECTING_CAKE_COUNT) {
-                    mTurnCount = 0;
-                    mGameFlow = GameFlowType.NEW_ROUND;
-
-                    return;
-                }
-
-                mPanelHUD.mPanelStatus.update();
-                int index = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
-                var targetPlayer = mPlayers.get(index);
-
-                if (targetPlayer instanceof MyPlayer) {
-                    if (mLastTurnCount != mTurnCount) {
-                        mLastTurnCount = mTurnCount;
-
-                        mMyPlayer.setCardSelected(false);
-                        mMyPlayer.setCakeSelected(false);
-
-                        mPanelLog.println("당신의 차례입니다.");
-                        mLimitTime = Config.getLimitSecondsPerTurn();
-
-                        mPanelHUD.mPanelCardList.setEnabled(true);
-                        mPanelHUD.mPanelCakeList.setEnabled(false);
-                    }
-
-                    if (mLimitTime <= 0 && !mMyPlayer.isCardSelected()) {
-                        var card = mMyPlayer.pickUpRandomCard();
-                        mDummyCards.add(card);
-
-                        mMyPlayer.setCardSelected(true);
-                        mMyPlayer.setNowCard(card);
-
-                        mLimitTime = Config.getLimitSecondsPerTurn();
-                    }
-
-                    if (!mMyPlayer.isCardSelected()) {
-                        return;
-                    }
-
-                    if (mLimitTime <= 0 && !mMyPlayer.isCakeSelected()) {
-                        var card = mMyPlayer.getNowCard();
-
-                        ArrayList<Spot> targetSpots = new ArrayList<Spot>();
-                        ArrayList<Cake> targetCakes = new ArrayList<Cake>();
-                        for (var city : mCities) {
-                            var spot = city.getSpotByCake(card, mMyPlayer.getPosition());
-                            for (var cake : mMyPlayer.getUsableCakes()) {
-                                if (spot.isStackable(cake)) {
-                                    targetSpots.add(spot);
-                                    targetCakes.add(cake);
-                                }
-                            }
-                        }
-
-                        Random random2 = new Random(System.currentTimeMillis());
-                        int index2 = random2.nextInt(targetSpots.size());
-                        var targetSpot = targetSpots.get(index2);
-                        var targetCake = targetCakes.get(index2);
-
-                        targetSpot.stackCake(targetCake);
-                        targetSpot.updateLabels();
-
-                        mMyPlayer.useCake(targetCake);
-
-                        for (var city : mCities) {
-                            for (var spot : city.getSpots()) {
-                                spot.clearColor();
-                            }
-                        }
-                        targetSpot.updateColor(mMyPlayer);
-
-                        mMyPlayer.setCakeSelected(true);
-                    }
-
-                    mPanelHUD.mPanelCardList.setEnabled(false);
-                    mPanelHUD.mPanelCakeList.setEnabled(true);
-
-                    if (!mMyPlayer.isCakeSelected()) {
-                        return;
-                    }
-
-                    mPanelHUD.mPanelCakeList.setEnabled(false);
-
-                } else if (targetPlayer instanceof NetPlayer) {
-
-                } else if (targetPlayer instanceof AIPlayer) {
-
-                    var ai = (AIPlayer) targetPlayer;
-                    var card = ai.pickUpRandomCard();
-                    mDummyCards.add(card);
-
-                    ArrayList<Spot> targetSpots = new ArrayList<Spot>();
-                    ArrayList<Cake> targetCakes = new ArrayList<Cake>();
-                    for (var city : mCities) {
-                        var spot = city.getSpotByCake(card, ai.getPosition());
-                        for (var cake : ai.getUsableCakes()) {
-                            if (spot.isStackable(cake)) {
-                                targetSpots.add(spot);
-                                targetCakes.add(cake);
-                            }
-                        }
-                    }
-
-                    Random random2 = new Random(System.currentTimeMillis());
-                    int index2 = random2.nextInt(targetSpots.size());
-                    var targetSpot = targetSpots.get(index2);
-                    var targetCake = targetCakes.get(index2);
-
-                    targetSpot.stackCake(targetCake);
-                    targetSpot.updateLabels();
-                    ai.useCake(targetCake);
-
-                    for (var city : mCities) {
-                        for (var spot : city.getSpots()) {
-                            spot.clearColor();
-                        }
-                    }
-                    targetSpot.updateColor(ai);
-
-                } else {
-                    assert (false) : "Invalid Player";
-                }
-
-                mPanelLog.println(String.format("%s 님이 케익을 놓았습니다.", targetPlayer.getId()));
-
-                targetPlayer.takeCardFromDummy(mDummyCards);
-                mPanelLog.println(String.format("%s 님이 카드를 1장 가져갑니다.", targetPlayer.getId()));
-
-                ++mTurnCount;
-                AudioManager.play("turn.wav");
-
+            case PICK_UP_CARD_AND_USE_CARD:
+                updatePickUpCardAndUseCard();
                 break;
 
             case GAME_OVER:
@@ -531,6 +428,7 @@ public final class PanelInGame extends JPanel {
                 mPanelLog.println(String.format("우승자 : %s", winner.getId()));
 
                 mTimer.stop();
+
                 break;
 
             default:
@@ -543,7 +441,7 @@ public final class PanelInGame extends JPanel {
             setLayout(new GridBagLayout());
             setOpaque(false);
 
-            JPanel panelMap = new JPanel(new GridLayout(2, 3)) {
+            JPanel panelMap = new JPanel(new GridLayout(Config.SPOT_ROW_PER_CITY, Config.SPOT_COLUMN_PER_CITY)) {
                 @Override
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
@@ -565,78 +463,12 @@ public final class PanelInGame extends JPanel {
             panelMap.setOpaque(false);
             panelMap.setPreferredSize(new Dimension(480, 324));
 
-            for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
-                var city = new City();
-                mCities.add(city);
+            mWorld = new World();
+
+            for (var city : mWorld.getCities()) {
                 panelMap.add(city.getLayeredPane());
-
                 for (var spot : city.getSpots()) {
-                    spot.getLabelTarget().addMouseListener(new MouseListener() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            if (!mMyPlayer.isCardSelected() || mMyPlayer.isCakeSelected()) {
-                                return;
-                            }
-
-                            int selectedIndex = mPanelHUD.getPanelCakeList().getListCake().getSelectedIndex();
-                            if (selectedIndex < 0) {
-
-                                return;
-                            }
-
-                            var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
-
-                            if (!spot.isStackable(cake)) {
-                                JOptionPane.showMessageDialog(null, "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
-
-                                return;
-                            }
-
-                            int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                            if (result != JOptionPane.YES_OPTION) {
-                                return;
-                            }
-
-                            for (var city : mCities) {
-                                city.clearTargetImages();
-                            }
-
-                            mMyPlayer.useCake(cake);
-                            mMyPlayer.setCakeSelected(true);
-
-                            mPanelHUD.mPanelCakeList.mListCake.setSelectedIndex(-1);
-
-                            spot.stackCake(cake);
-                            spot.updateLabels();
-
-                            for (var city : mCities) {
-                                for (var spot : city.getSpots()) {
-                                    spot.clearColor();
-                                }
-                            }
-                            spot.updateColor(mMyPlayer);
-                        }
-
-                        @Override
-                        public void mousePressed(MouseEvent e) {
-
-                        }
-
-                        @Override
-                        public void mouseReleased(MouseEvent e) {
-
-                        }
-
-                        @Override
-                        public void mouseEntered(MouseEvent e) {
-                            FrameMain.getInstance().setCursor(new Cursor(Cursor.HAND_CURSOR));
-                        }
-
-                        @Override
-                        public void mouseExited(MouseEvent e) {
-                            FrameMain.getInstance().setCursor(Cursor.getDefaultCursor());
-                        }
-                    });
+                    spot.getLabelTarget().addMouseListener(new SpotMouseListener(spot));
                 }
             }
 
@@ -668,6 +500,76 @@ public final class PanelInGame extends JPanel {
             gbc.anchor = GridBagConstraints.LINE_START;
             add(mPlayers.get(3).getMarker().getLayeredPane(), gbc);
         }
+
+        private class SpotMouseListener implements MouseListener {
+            private Spot mSpot;
+
+            public SpotMouseListener(final Spot spot) {
+                mSpot = spot;
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!mMyPlayer.isCardSelected() || mMyPlayer.isCakeSelected()) {
+                    return;
+                }
+
+                int selectedIndex = mPanelHUD.mPanelCakeList.getListCake().getSelectedIndex();
+                if (selectedIndex < 0) {
+                    return;
+                }
+
+                var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
+
+                if (!mSpot.isStackable(cake)) {
+                    JOptionPane.showMessageDialog(null, "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+
+                    return;
+                }
+
+                int result = JOptionPane.showConfirmDialog(FrameMain.getInstance(), "이곳에 케익을 두시겠습니까?", FrameMain.getInstance().getTitle(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (result != JOptionPane.YES_OPTION) {
+                    return;
+                }
+
+                mPanelHUD.setEnabled(false);
+
+                mWorld.clearTargetImages();
+
+                mDummyCards.add(mMyPlayer.getCardInHand());
+                mMyPlayer.useCake(selectedIndex);
+                mMyPlayer.setCakeSelected(true);
+
+                mPanelHUD.mPanelCakeList.mListCake.setSelectedIndex(-1);
+
+                mSpot.stackCake(cake);
+                mSpot.updateLabels();
+
+                mWorld.clearAllSpots();
+
+                mSpot.updateSpotColor(mMyPlayer);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                FrameMain.getInstance().setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                FrameMain.getInstance().setCursor(Cursor.getDefaultCursor());
+            }
+        }
     }
 
     private class PanelLog extends JPanel {
@@ -694,8 +596,8 @@ public final class PanelInGame extends JPanel {
         }
 
         public void println(String text) {
-            mTextAreaLog.append(text);
-            mTextAreaLog.append(System.lineSeparator());
+            print(text);
+            print(System.lineSeparator());
         }
 
         private void printScores() {
@@ -744,22 +646,6 @@ public final class PanelInGame extends JPanel {
             add(mPanelStatus, gbc);
 
             setEnabled(false);
-        }
-
-        public PanelCakeFridge getPanelCakeFridge() {
-            return mPanelCakeFridge;
-        }
-
-        public PanelCakeList getPanelCakeList() {
-            return mPanelCakeList;
-        }
-
-        public PanelCardList getPanelCardList() {
-            return mPanelCardList;
-        }
-
-        public PanelStatus getPanelStatus() {
-            return mPanelStatus;
         }
 
         @Override
@@ -817,8 +703,6 @@ public final class PanelInGame extends JPanel {
                 add(mLabelRemainCakeCounts[i], gbc);
             }
 
-            update();
-
             gbc.gridy = 3;
             gbc.gridx = 0;
             gbc.gridwidth = 5;
@@ -833,6 +717,7 @@ public final class PanelInGame extends JPanel {
             buttonApply.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    resetLimitTime();
                     int cakeCount = 0;
                     for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                         cakeCount += (Integer) mSpinners[i].getValue();
@@ -847,7 +732,7 @@ public final class PanelInGame extends JPanel {
                     for (int i = 0; i < CakeLayerType.SIZE; ++i) {
                         int count = (Integer) mSpinners[i].getValue();
                         for (int c = 0; c < count; ++c) {
-                            mMyPlayer.takeCake(layers[i]);
+                            mMyPlayer.takeOutCakeFromFridge(layers[i]);
                         }
                     }
 
@@ -855,7 +740,10 @@ public final class PanelInGame extends JPanel {
                     setEnabled(false);
                 }
             });
+
             add(buttonApply, gbc);
+
+            update();
         }
 
         @Override
@@ -927,6 +815,7 @@ public final class PanelInGame extends JPanel {
     private class PanelCardList extends JPanel {
         private JList<ImageIcon> mListCard;
         private JButton mButtonPlayCard;
+        private JButton mButtonUndo;
         private JScrollPane mListCardScroller;
 
         public PanelCardList() {
@@ -948,12 +837,8 @@ public final class PanelInGame extends JPanel {
 
                         return;
                     }
-
-                    var card = mMyPlayer.getCards().get(selectedIndex);
-                    for (var city : mCities) {
-                        city.clearTargetImages();
-                        city.drawTargetImages(card, mMyPlayer.getPosition());
-                    }
+                    mWorld.clearTargetImages();
+                    mWorld.drawTargetImages(mMyPlayer.getCard(selectedIndex), mMyPlayer.getPosition());
                 }
             });
 
@@ -978,38 +863,66 @@ public final class PanelInGame extends JPanel {
 
                         return;
                     }
+                    mWorld.clearTargetImages();
+                    mWorld.drawTargetImages(mMyPlayer.getCard(selectedIndex), mMyPlayer.getPosition());
 
-                    var selectedCard = mMyPlayer.getCards().get(selectedIndex);
-                    for (var city : mCities) {
-                        city.clearTargetImages();
-                        city.drawTargetImages(selectedCard, mMyPlayer.getPosition());
-                    }
-
-                    mMyPlayer.pickUpCard(selectedCard);
-                    mDummyCards.add(selectedCard);
-                    Collections.shuffle(mDummyCards);
-
-                    setEnabled(false);
-                    mPanelHUD.mPanelCakeList.setEnabled(true);
-
+                    mMyPlayer.pickUpCard(selectedIndex);
                     mListCard.setSelectedIndex(-1);
 
-                    mMyPlayer.setCardSelected(true);
+                    mButtonPlayCard.setEnabled(false);
+                    mButtonUndo.setEnabled(true);
+                    mPanelHUD.mPanelCakeList.setEnabled(true);
+                    setScrollerEnabled(false);
                 }
             });
+            gbc.weighty = 0.5;
             gbc.gridy = 1;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             add(mButtonPlayCard, gbc);
+
+            mButtonUndo = new JButton("카드 회수");
+            mButtonUndo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (mMyPlayer.getCardInHand() == null) {
+                        JOptionPane.showMessageDialog(FrameMain.getInstance(), "카드를 선택하지 않았습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    mDummyCards.remove(mMyPlayer.getCardInHand());
+                    mMyPlayer.retrieveCard();
+
+                    mWorld.clearTargetImages();
+
+                    mButtonPlayCard.setEnabled(true);
+                    mButtonUndo.setEnabled(false);
+                    mPanelHUD.mPanelCakeList.setEnabled(false);
+                    setScrollerEnabled(true);
+                }
+            });
+            gbc.gridy = 2;
+            add(mButtonUndo, gbc);
         }
 
         @Override
-        public void setEnabled(boolean enabled) {
+        public void setEnabled(final boolean enabled) {
             super.setEnabled(enabled);
-
             for (var component : getComponents())  {
                 component.setEnabled(enabled);
             }
+            setScrollerEnabled(enabled);
 
+            if (enabled) {
+                initialize();
+            }
+        }
+
+        private void initialize() {
+            mButtonPlayCard.setEnabled(true);
+            mButtonUndo.setEnabled(false);
+        }
+
+        private void setScrollerEnabled(final boolean enabled) {
             mListCardScroller.getHorizontalScrollBar().setEnabled(enabled);
             mListCardScroller.getVerticalScrollBar().setEnabled(enabled);
             mListCardScroller.getViewport().getView().setEnabled(enabled);
