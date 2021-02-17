@@ -11,7 +11,7 @@ public final class World {
 
     public World() {
         for (int i = 0; i < Config.MAX_CITY_SIZE; ++i) {
-            var city = new City();
+            City city = new City();
             mCities.add(city);
         }
     }
@@ -24,9 +24,9 @@ public final class World {
         int maxHeight = 0;
         ArrayList<Player> owners = new ArrayList<Player>();
 
-        for (var city : mCities) {
-            for (var spot : city.getSpots()) {
-                var owner = spot.getOwnerOrNull();
+        for (City city : mCities) {
+            for (Spot spot : city.getSpots()) {
+                Player owner = spot.getOwnerOrNull();
                 if (owner == null) {
                     continue;
                 }
@@ -48,13 +48,13 @@ public final class World {
     public ArrayList<Player> getMostCakeOwnersPerCity() {
         ArrayList<Player> owners = new ArrayList<Player>();
 
-        for (var city : mCities) {
+        for (City city : mCities) {
 
             int maxCount = 0;
             HashMap<Player, Integer> ownersPerCity = new HashMap<Player, Integer>();
 
-            for (var spot : city.getSpots()) {
-                var owner = spot.getOwnerOrNull();
+            for (Spot spot : city.getSpots()) {
+                Player owner = spot.getOwnerOrNull();
                 if (owner == null) {
                     continue;
                 }
@@ -88,23 +88,23 @@ public final class World {
     }
 
     public void clearTargetImages() {
-        for (var city : mCities) {
-            for (var spot : city.getSpots()) {
+        for (City city : mCities) {
+            for (Spot spot : city.getSpots()) {
                 spot.setTargetVisible(false);
             }
         }
     }
 
     public void drawTargetImages(final CardType cardType, final PlayerPositionType playerPositionType) {
-        for (var city : mCities) {
+        for (City city : mCities) {
             int index = City.INDICES_2D_MAP[playerPositionType.getIndex()][cardType.getIndex()];
             city.getSpots().get(index).setTargetVisible(true);
         }
     }
 
     public void clearAllSpots() {
-        for (var city : getCities()) {
-            for (var spot : city.getSpots()) {
+        for (City city : getCities()) {
+            for (Spot spot : city.getSpots()) {
                 spot.clearSpot();
             }
         }

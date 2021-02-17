@@ -31,7 +31,7 @@ public final class PanelConfig extends JPanel {
         panelNested.setPreferredSize(new Dimension(350, 150));
         panelNested.setBackground(Color.WHITE);
 
-        var gbc = new GridBagConstraints();
+        GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
@@ -41,21 +41,21 @@ public final class PanelConfig extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // labels
-        var label00 = new JLabel("아이디");
+        JLabel label00 = new JLabel("아이디");
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
         panelNested.add(label00, gbc);
 
-        var label01 = new JLabel("한 턴당 제한 시간");
+        JLabel label01 = new JLabel("한 턴당 제한 시간");
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
         panelNested.add(label01, gbc);
 
-        var label02 = new JLabel("효과음 볼륨");
+        JLabel label02 = new JLabel("효과음 볼륨");
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 1;
@@ -149,13 +149,13 @@ public final class PanelConfig extends JPanel {
 
         gbc.fill = GridBagConstraints.BOTH;
 
-        var buttonApply = new JButton("적용");
+        JButton buttonApply = new JButton("적용");
         buttonApply.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String text = mTextFieldId.getText();
                 if (text.length() > 0) {
-                    var panelManager = PanelManager.getInstance();
+                    PanelManager panelManager = PanelManager.getInstance();
                     panelManager.popPanel();
                     panelManager.gotoPanel(panelManager.getCurrentPanel());
                     Config.setUserId(text);
@@ -169,11 +169,11 @@ public final class PanelConfig extends JPanel {
             }
         });
 
-        var buttonCancel = new JButton("취소");
+        JButton buttonCancel = new JButton("취소");
         buttonCancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                var panelManager = PanelManager.getInstance();
+                PanelManager panelManager = PanelManager.getInstance();
                 panelManager.popPanel();
                 panelManager.gotoPanel(panelManager.getCurrentPanel());
             }

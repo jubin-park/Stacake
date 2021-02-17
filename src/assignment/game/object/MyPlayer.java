@@ -43,7 +43,7 @@ public final class MyPlayer extends Player {
 
         Random random = new Random(System.currentTimeMillis());
         int selectedIndex = random.nextInt(dummyCards.size());
-        var selectedCard = dummyCards.get(selectedIndex);
+        CardType selectedCard = dummyCards.get(selectedIndex);
 
         dummyCards.remove(selectedIndex);
         mCards.add(selectedCard);
@@ -64,7 +64,7 @@ public final class MyPlayer extends Player {
     public void takeOutCakeFromFridge(final CakeLayerType cakeLayerType) {
         final int size = mFridgeCakes.size();
         for (int i = 0; i < size; ++i) {
-            var cake = mFridgeCakes.get(i);
+            Cake cake = mFridgeCakes.get(i);
 
             if (cake.getLayerType() == cakeLayerType) {
                 mFridgeCakes.remove(i);
@@ -79,7 +79,7 @@ public final class MyPlayer extends Player {
 
     @Override
     public void takeOutCakeFromFridgeByIndex(final int index) {
-        var cake = mFridgeCakes.get(index);
+        Cake cake = mFridgeCakes.get(index);
         mFridgeCakes.remove(cake);
         mUsableCakes.add(cake);
 

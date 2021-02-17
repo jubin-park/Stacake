@@ -69,7 +69,7 @@ public abstract class Player {
 
     public int getCakeLayerCount(final CakeLayerType cakeLayerType) {
         int count = 0;
-        for (var cake : mFridgeCakes) {
+        for (Cake cake : mFridgeCakes) {
             if (cake.getLayerType() == cakeLayerType) {
                 ++count;
             }
@@ -122,7 +122,7 @@ public abstract class Player {
     public void takeOutCakeFromFridge(final CakeLayerType cakeLayerType) {
         final int size = mFridgeCakes.size();
         for (int i = 0; i < size; ++i) {
-            var cake = mFridgeCakes.get(i);
+            Cake cake = mFridgeCakes.get(i);
             if (cake.getLayerType() == cakeLayerType) {
                 mFridgeCakes.remove(i);
                 mUsableCakes.add(cake);
@@ -133,7 +133,7 @@ public abstract class Player {
     }
 
     public void takeOutCakeFromFridgeByIndex(final int index) {
-        var cake = mFridgeCakes.get(index);
+        Cake cake = mFridgeCakes.get(index);
         mFridgeCakes.remove(cake);
         mUsableCakes.add(cake);
     }
@@ -150,11 +150,11 @@ public abstract class Player {
         final int cardSize = mCards.size();
         final int cakeSize = mUsableCakes.size();
 
-        for (var city : world.getCities()) {
+        for (City city : world.getCities()) {
             for (int i = 0; i < cardSize; ++i) {
-                var spot = city.getSpotByCardAndPositionType(mCards.get(i), mPositionType);
+                Spot spot = city.getSpotByCardAndPositionType(mCards.get(i), mPositionType);
                 for (int c = 0; c < cakeSize; ++c) {
-                    var cake = mUsableCakes.get(c);
+                    Cake cake = mUsableCakes.get(c);
                     if (spot.isStackable(cake)) {
                         tuples.add(new PlayingTuple(i, spot, c));
                     }

@@ -18,27 +18,27 @@ public final class PanelIntro extends JPanel {
         JPanel panelButtonList = new JPanel(new GridLayout(4, 1));
 
         // title
-        var labelTitle = new JLabel("<html><h1><strong><i>- Stacake -</i></strong></h1><p>Stack pieces of cake<hr></html>");
+        JLabel labelTitle = new JLabel("<html><h1><strong><i>- Stacake -</i></strong></h1><p>Stack pieces of cake<hr></html>");
         labelTitle.setOpaque(true);
         labelTitle.setBackground(Color.WHITE);
         panelButtonList.add(labelTitle);
 
         // buttons
-        var buttonSinglePlay = new JButton("혼자 놀기", new ImageIcon(ResourceManager.getInstance().getImageSingleGame()));
+        JButton buttonSinglePlay = new JButton("혼자 놀기", new ImageIcon(ResourceManager.getInstance().getImageSingleGame()));
         buttonSinglePlay.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonSinglePlay.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonSinglePlay.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                var panelManager = PanelManager.getInstance();
-                var panelInGame = new PanelInGame(new String[] {});
+                PanelManager panelManager = PanelManager.getInstance();
+                PanelInGame panelInGame = new PanelInGame(new String[] {});
                 panelManager.gotoPanel(panelInGame);
                 panelInGame.start();
             }
         });
         panelButtonList.add(buttonSinglePlay);
 
-        var buttonCreateNetPlay = new JButton("같이 놀기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
+        JButton buttonCreateNetPlay = new JButton("같이 놀기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
         buttonCreateNetPlay.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonCreateNetPlay.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonCreateNetPlay.addActionListener(new ActionListener() {
@@ -49,7 +49,7 @@ public final class PanelIntro extends JPanel {
         });
         //panelButtonList.add(buttonCreateNetPlay);
 
-        var buttonJoinNetPlay = new JButton("방 만들기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
+        JButton buttonJoinNetPlay = new JButton("방 만들기", new ImageIcon(ResourceManager.getInstance().getImageOnlineGame()));
         buttonJoinNetPlay.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonJoinNetPlay.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonJoinNetPlay.addActionListener(new ActionListener() {
@@ -60,19 +60,19 @@ public final class PanelIntro extends JPanel {
         });
         //panelButtonList.add(buttonJoinNetPlay);
 
-        var buttonConfig = new JButton("환경 설정", new ImageIcon(ResourceManager.getInstance().getImageConfig()));
+        JButton buttonConfig = new JButton("환경 설정", new ImageIcon(ResourceManager.getInstance().getImageConfig()));
         buttonConfig.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonConfig.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonConfig.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                var panelManager = PanelManager.getInstance();
+                PanelManager panelManager = PanelManager.getInstance();
                 panelManager.gotoPanel(new PanelConfig());
             }
         });
         panelButtonList.add(buttonConfig);
 
-        var buttonExit = new JButton("종료", new ImageIcon(ResourceManager.getInstance().getImageShutdown()));
+        JButton buttonExit = new JButton("종료", new ImageIcon(ResourceManager.getInstance().getImageShutdown()));
         buttonExit.setVerticalTextPosition(SwingConstants.BOTTOM);
         buttonExit.setHorizontalTextPosition(SwingConstants.CENTER);
         buttonExit.addActionListener(new ActionListener() {

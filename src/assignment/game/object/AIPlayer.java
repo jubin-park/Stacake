@@ -14,7 +14,7 @@ public final class AIPlayer extends Player {
 
         Random random = new Random(System.currentTimeMillis());
         int selectedIndex = random.nextInt(dummyCards.size());
-        var selectedCard = dummyCards.get(selectedIndex);
+        CardType selectedCard = dummyCards.get(selectedIndex);
 
         dummyCards.remove(selectedIndex);
         mCards.add(selectedCard);

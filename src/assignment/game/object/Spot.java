@@ -4,6 +4,7 @@ import assignment.Config;
 import assignment.utility.ResourceManager;
 import assignment.utility.StringUtility;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.*;
 
@@ -40,7 +41,7 @@ public final class Spot {
 
     public int getCakeLayerCount(final PlayerPositionType playerPositionType) {
         int count = 0;
-        for (var cake : mCakes) {
+        for (Cake cake : mCakes) {
             if (cake.getOwner().getPosition() == playerPositionType) {
                 count += cake.getLayerType().getValue();
             }
@@ -51,7 +52,7 @@ public final class Spot {
 
     public int getCakeHeight() {
         int count = 0;
-        for (var cake : mCakes) {
+        for (Cake cake : mCakes) {
             count += cake.getLayerType().getValue();
         }
 
@@ -71,7 +72,7 @@ public final class Spot {
     }
 
     public void updateLabels() {
-        for (var positionType : PlayerPositionType.values()) {
+        for (PlayerPositionType positionType : PlayerPositionType.values()) {
             int index = positionType.getIndex();
             int count = getCakeLayerCount(positionType);
 
@@ -96,7 +97,7 @@ public final class Spot {
 
         int x = player.getPosition().getIndex()  * Config.SPOT_IMAGE_WIDTH;
         int y = (player.getColor().getIndex() + 1) * Config.SPOT_IMAGE_HEIGHT;
-        var subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
+        BufferedImage subImage = ResourceManager.getInstance().getImageSetSpot().getSubimage(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
 
         mLabelSpot.setIcon(new ImageIcon(subImage));
     }
@@ -109,7 +110,7 @@ public final class Spot {
         int targetLayerCount = 0;
         int maxLayerCount = 0;
 
-        for (var positionType : PlayerPositionType.values()) {
+        for (PlayerPositionType positionType : PlayerPositionType.values()) {
             int count = getCakeLayerCount(positionType);
             if (positionType == cake.getOwner().getPosition()) {
                 targetLayerCount = count;
@@ -126,7 +127,7 @@ public final class Spot {
 
     public void addToJLayeredPane(final JLayeredPane layeredPane) {
         layeredPane.add(mLabelTarget);
-        for (var label : mLabelTotalLayers) {
+        for (JLabel label : mLabelTotalLayers) {
             layeredPane.add(label);
         }
         layeredPane.add(mLabelSpot);

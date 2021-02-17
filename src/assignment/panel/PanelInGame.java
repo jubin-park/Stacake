@@ -2,17 +2,7 @@ package assignment.panel;
 
 import assignment.Config;
 import assignment.game.GameFlowType;
-import assignment.game.object.AIPlayer;
-import assignment.game.object.PlayingTuple;
-import assignment.game.object.CakeLayerType;
-import assignment.game.object.CardType;
-import assignment.game.object.MyPlayer;
-import assignment.game.object.PlayerColorType;
-import assignment.game.object.PlayerPositionType;
-import assignment.game.object.NetPlayer;
-import assignment.game.object.Player;
-import assignment.game.object.Spot;
-import assignment.game.object.World;
+import assignment.game.object.*;
 import assignment.utility.AudioManager;
 import assignment.utility.ResourceManager;
 import assignment.frame.FrameMain;
@@ -26,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import javax.smartcardio.Card;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -56,7 +47,7 @@ public final class PanelInGame extends JPanel {
         locateMarkers(netPlayerIds);
         initializeDummyCards();
 
-        var panelGridBag = new JPanel(new GridBagLayout());
+        JPanel panelGridBag = new JPanel(new GridBagLayout());
         panelGridBag.setOpaque(false);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -116,21 +107,21 @@ public final class PanelInGame extends JPanel {
     // 점수 계산 (각 라운드 마다)
     private void calculateScore() {
         // 1. 전체 중 가장 높은 빌딩을 소유한 플레이어 +3 (동점인 경우 아무도 받지 못함)
-        var highestCakeOwners = mWorld.getHighestCakeOwners();
+        ArrayList<Player> highestCakeOwners = mWorld.getHighestCakeOwners();
         if (highestCakeOwners.size() == 1) {
             highestCakeOwners.get(0).addScore(3);
         }
 
         // 2. 각 도시별로 가장 많은 빌딩을 소유한 플레이어 +2 (동점인 경우 아무도 받지 못함)
-        var mostCakeOwnersPerCity = mWorld.getMostCakeOwnersPerCity();
-        for (var owner : mostCakeOwnersPerCity) {
+        ArrayList<Player> mostCakeOwnersPerCity = mWorld.getMostCakeOwnersPerCity();
+        for (Player owner : mostCakeOwnersPerCity) {
             owner.addScore(2);
         }
 
         // 3. 각 플레이어가 소유한 빌딩 1채 당 +1
-        for (var city : mWorld.getCities()) {
-            for (var spot : city.getSpots()) {
-                var owner = spot.getOwnerOrNull();
+        for (City city : mWorld.getCities()) {
+            for (Spot spot : city.getSpots()) {
+                Player owner = spot.getOwnerOrNull();
                 if (owner == null) {
                     continue;
                 }
@@ -143,14 +134,14 @@ public final class PanelInGame extends JPanel {
     private Player getWinner() {
         // 4. 라운드를 마치고 가장 높은 점수를 얻은 플레이어가 승리
         int maxScore = 0;
-        for (var player : mPlayers) {
+        for (Player player : mPlayers) {
             if (maxScore < player.getScore()) {
                 maxScore = player.getScore();
             }
         }
 
         ArrayList<Player> highestScorePlayers = new ArrayList<Player>();
-        for (var player : mPlayers) {
+        for (Player player : mPlayers) {
             if (maxScore == player.getScore()) {
                 highestScorePlayers.add(player);
             }
@@ -162,7 +153,7 @@ public final class PanelInGame extends JPanel {
 
         // 5. 동점이면 가장 높은 빌딩을 소유한 플레이어가 승리
         ArrayList<Player> highestCakeOwners = new ArrayList<Player>();
-        for (var owner : mWorld.getHighestCakeOwners()) {
+        for (Player owner : mWorld.getHighestCakeOwners()) {
             if (highestScorePlayers.contains(owner)) {
                 highestCakeOwners.add(owner);
             }
@@ -173,7 +164,7 @@ public final class PanelInGame extends JPanel {
         }
 
         // 6. 그래도 동점이면 가장 많은 빌딩을 소유한 플레이어가 승리
-        for (var owner : mWorld.getMostCakeOwnersPerCity()) {
+        for (Player owner : mWorld.getMostCakeOwnersPerCity()) {
             if (highestCakeOwners.contains(owner)) {
                 return owner;
             }
@@ -189,7 +180,7 @@ public final class PanelInGame extends JPanel {
         ArrayList<PlayerPositionType> positions = new ArrayList<PlayerPositionType>(Arrays.asList(PlayerPositionType.values()));
 
         mPlayers.add(mMyPlayer);
-        for (var id : netPlayerIds) {
+        for (String id : netPlayerIds) {
             mPlayers.add(new NetPlayer(id));
         }
         int computerNum = 0;
@@ -199,7 +190,7 @@ public final class PanelInGame extends JPanel {
         Collections.shuffle(mPlayers);
 
         int positionIndex = 0;
-        for (var player : mPlayers) {
+        for (Player player : mPlayers) {
             int colorIndex = rand.nextInt(colors.size());
             player.setColor(colors.get(colorIndex));
             colors.remove(colorIndex);
@@ -210,7 +201,7 @@ public final class PanelInGame extends JPanel {
     }
 
     private void initializeDummyCards() {
-        for (var cardType : CardType.values()) {
+        for (CardType cardType : CardType.values()) {
             for (int i = 0; i < 5; ++i) {
                 mDummyCards.add(cardType);
             }
@@ -254,7 +245,7 @@ public final class PanelInGame extends JPanel {
         mMyPlayer.setCakeSelected(false);
 
         // AIPlayer 케이크 6개 선택
-        for (var player : mPlayers) {
+        for (Player player : mPlayers) {
             if (player == mMyPlayer) {
                 continue;
             }
@@ -297,7 +288,7 @@ public final class PanelInGame extends JPanel {
 
         mPanelHUD.mPanelStatus.update();
         int targetPlayerIndex = (mStartPlayerIndex + mTurnCount) % Config.MAX_PLAYER_SIZE;
-        var targetPlayer = mPlayers.get(targetPlayerIndex);
+        Player targetPlayer = mPlayers.get(targetPlayerIndex);
 
         if (targetPlayer instanceof MyPlayer) {
             if (mLastTurnCount != mTurnCount) {
@@ -327,12 +318,12 @@ public final class PanelInGame extends JPanel {
                 }
 
                 // 랜덤
-                var tuple = mMyPlayer.createRandomPlayingTuple(mWorld);
-                var cardIndex = tuple.getCardIndex();
-                var cardType = mMyPlayer.getCard(cardIndex);
-                var cakeIndex = tuple.getCakeIndex();
-                var cake = mMyPlayer.getUsableCake(cakeIndex);
-                var spot = tuple.getSpot();
+                PlayingTuple tuple = mMyPlayer.createRandomPlayingTuple(mWorld);
+                int cardIndex = tuple.getCardIndex();
+                CardType cardType = mMyPlayer.getCard(cardIndex);
+                int cakeIndex = tuple.getCakeIndex();
+                Cake cake = mMyPlayer.getUsableCake(cakeIndex);
+                Spot spot = tuple.getSpot();
 
                 mDummyCards.add(cardType);
                 mWorld.clearTargetImages();
@@ -352,12 +343,12 @@ public final class PanelInGame extends JPanel {
         } else if (targetPlayer instanceof AIPlayer) {
             resetLimitTime();
 
-            var tuple = targetPlayer.createRandomPlayingTuple(mWorld);
-            var cardIndex = tuple.getCardIndex();
-            var cardType = targetPlayer.getCard(cardIndex);
-            var cakeIndex = tuple.getCakeIndex();
-            var cake = targetPlayer.getUsableCake(cakeIndex);
-            var spot = tuple.getSpot();
+            PlayingTuple tuple = targetPlayer.createRandomPlayingTuple(mWorld);
+            int cardIndex = tuple.getCardIndex();
+            CardType cardType = targetPlayer.getCard(cardIndex);
+            int cakeIndex = tuple.getCakeIndex();
+            Cake cake = targetPlayer.getUsableCake(cakeIndex);
+            Spot spot = tuple.getSpot();
 
             mDummyCards.add(cardType);
             targetPlayer.pickUpCard(cardIndex);
@@ -390,7 +381,7 @@ public final class PanelInGame extends JPanel {
                 mPanelLog.println("환영합니다.");
 
                 // 랜덤 카드 4장씩 분배
-                for (var player : mPlayers) {
+                for (Player player : mPlayers) {
                     for (int i = 0; i < Config.ROUND_CARD_COUNT; ++i) {
                         player.takeOutCardFromDummy(mDummyCards);
                     }
@@ -466,9 +457,9 @@ public final class PanelInGame extends JPanel {
 
             mWorld = new World();
 
-            for (var city : mWorld.getCities()) {
+            for (City city : mWorld.getCities()) {
                 panelMap.add(city.getLayeredPane());
-                for (var spot : city.getSpots()) {
+                for (Spot spot : city.getSpots()) {
                     spot.getLabelTarget().addMouseListener(new SpotMouseListener(spot));
                 }
             }
@@ -520,7 +511,7 @@ public final class PanelInGame extends JPanel {
                     return;
                 }
 
-                var cake = mMyPlayer.getUsableCakes().get(selectedIndex);
+                Cake cake = mMyPlayer.getUsableCakes().get(selectedIndex);
 
                 if (!mSpot.isStackable(cake)) {
                     JOptionPane.showMessageDialog(null, "이곳에 케익을 둘 수 없습니다.", FrameMain.getInstance().getTitle(), JOptionPane.ERROR_MESSAGE);
@@ -603,13 +594,22 @@ public final class PanelInGame extends JPanel {
 
         private void printScores() {
             println(StringUtility.EMPTY);
-            println("=".repeat(30));
+            for (int i = 0; i < 30; ++i) {
+                print("=");
+            }
+            println("");
             println(String.format(" * %d 라운드 점수 결과", mRoundCount));
-            println("-".repeat(50));
-            for (var player : mPlayers) {
+            for (int i = 0; i < 50; ++i) {
+                print("=");
+            }
+            println("");
+            for (Player player : mPlayers) {
                 println(String.format(" - %s : %d점", player.getId(), player.getScore()));
             }
-            println("=".repeat(30));
+            for (int i = 0; i < 30; ++i) {
+                print("=");
+            }
+            println("");
             println(StringUtility.EMPTY);
         }
 
@@ -713,7 +713,7 @@ public final class PanelInGame extends JPanel {
             gbc.gridx = 0;
             gbc.gridwidth = 5;
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            var buttonApply = new JButton("케익 꺼내기");
+            JButton buttonApply = new JButton("케익 꺼내기");
 
             buttonApply.addActionListener(new ActionListener() {
                 @Override
@@ -751,7 +751,7 @@ public final class PanelInGame extends JPanel {
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
 
-            for (var component : getComponents()) {
+            for (Component component : getComponents()) {
                 component.setEnabled(enabled);
             }
         }
@@ -803,7 +803,7 @@ public final class PanelInGame extends JPanel {
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
 
-            for (var component : getComponents()) {
+            for (Component component : getComponents()) {
                 component.setEnabled(enabled);
             }
 
@@ -908,7 +908,7 @@ public final class PanelInGame extends JPanel {
         @Override
         public void setEnabled(final boolean enabled) {
             super.setEnabled(enabled);
-            for (var component : getComponents())  {
+            for (Component component : getComponents())  {
                 component.setEnabled(enabled);
             }
             setScrollerEnabled(enabled);
@@ -966,7 +966,7 @@ public final class PanelInGame extends JPanel {
             buttonExit.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    var panelManager = PanelManager.getInstance();
+                    PanelManager panelManager = PanelManager.getInstance();
                     panelManager.popPanel();
                     panelManager.gotoPanel(new PanelIntro());
                     mTimer.stop();

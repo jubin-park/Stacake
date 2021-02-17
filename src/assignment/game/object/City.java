@@ -20,7 +20,7 @@ public final class City {
         mLayeredPane.setOpaque(false);
 
         for (int i = 0; i < Config.SPOT_COUNT_PER_CITY; ++i) {
-            var spot = new Spot();
+            Spot spot = new Spot();
             mSpots.add(spot);
 
             int x = 8 + (i % Config.SPOT_COLUMN_PER_CITY) * Config.SPOT_IMAGE_WIDTH;
@@ -28,9 +28,9 @@ public final class City {
 
             spot.getLabelSpot().setBounds(x, y, Config.SPOT_IMAGE_WIDTH, Config.SPOT_IMAGE_HEIGHT);
 
-            var rectangle = new Rectangle(x + Config.SPOT_LABEL_OFFSET_X, y + Config.SPOT_LABEL_OFFSET_Y, Config.SPOT_LABEL_WIDTH, Config.SPOT_LABEL_HEIGHT);
+            Rectangle rectangle = new Rectangle(x + Config.SPOT_LABEL_OFFSET_X, y + Config.SPOT_LABEL_OFFSET_Y, Config.SPOT_LABEL_WIDTH, Config.SPOT_LABEL_HEIGHT);
 
-            var labels = spot.getLabelTotalLayers();
+            JLabel[] labels = spot.getLabelTotalLayers();
             labels[0].setHorizontalAlignment(SwingConstants.CENTER);
             labels[0].setVerticalAlignment(SwingConstants.BOTTOM);
             labels[0].setBounds(rectangle);

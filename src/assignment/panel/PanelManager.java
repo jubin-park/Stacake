@@ -31,7 +31,7 @@ public final class PanelManager {
     }
 
     public void gotoPanel(final JPanel panel) {
-        var frameMain = FrameMain.getInstance();
+        FrameMain frameMain = FrameMain.getInstance();
         frameMain.add(panel.toString(), panel);
         mCardLayout.show(frameMain.getContentPane(), panel.toString());
         mPanels.add(panel);
